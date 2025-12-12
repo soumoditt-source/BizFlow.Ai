@@ -50,7 +50,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin, language }) => {
 
   if (isScanning) {
       return (
-          <div className="flex flex-col items-center justify-center min-h-[80vh] animate-fade-in relative">
+          <div className="flex flex-col items-center justify-center min-h-[80vh] animate-fade-in relative px-4">
               <div className="absolute inset-0 bg-black z-50 flex flex-col items-center justify-center">
                   <div className="relative w-32 h-32 mb-8">
                       <div className="absolute inset-0 border-2 border-green-900 rounded-full"></div>
@@ -61,14 +61,14 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin, language }) => {
                         </svg>
                       </div>
                   </div>
-                  <h2 className="text-2xl font-black text-green-500 uppercase tracking-widest mb-2">{getLabel(language, 'legalTitle')}</h2>
+                  <h2 className="text-2xl font-black text-green-500 uppercase tracking-widest mb-2 text-center">{getLabel(language, 'legalTitle')}</h2>
                   <div className="w-64 h-1 bg-gray-900 rounded-full overflow-hidden mb-4">
                       <div 
                         className="h-full bg-green-500 transition-all duration-300" 
                         style={{ width: `${((scanStep + 1) / 4) * 100}%` }}
                       ></div>
                   </div>
-                  <p className="text-green-400 font-mono text-xs">{
+                  <p className="text-green-400 font-mono text-xs text-center">{
                       [getLabel(language, 'verifyingKeys'), getLabel(language, 'bioMatch'), getLabel(language, 'netScan'), getLabel(language, 'accessGranted')][scanStep]
                   }</p>
               </div>
@@ -77,11 +77,11 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin, language }) => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] animate-fade-in relative">
+    <div className="flex flex-col items-center justify-center min-h-[80vh] animate-fade-in relative px-4">
       {/* Background Grid Effect */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(19,78,74,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(19,78,74,0.1)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] -z-10"></div>
 
-      <div className={`w-full max-w-md border ${isAdminMode ? 'border-green-500/50 bg-black' : 'border-bizflow-500/30 bg-dark-card'} p-8 rounded-2xl shadow-2xl relative overflow-hidden backdrop-blur-xl transition-all duration-500`}>
+      <div className={`w-full max-w-md border ${isAdminMode ? 'border-green-500/50 bg-black' : 'border-bizflow-500/30 bg-dark-card'} p-6 md:p-8 rounded-2xl shadow-2xl relative overflow-hidden backdrop-blur-xl transition-all duration-500`}>
         
         {/* Top Scanner Line */}
         <div className={`absolute top-0 left-0 w-full h-1 ${isAdminMode ? 'bg-green-500' : 'bg-gradient-to-r from-bizflow-500 to-purple-600'} shadow-[0_0_20px_currentColor]`}></div>

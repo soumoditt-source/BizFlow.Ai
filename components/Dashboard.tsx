@@ -133,21 +133,21 @@ Timestamp: ${new Date().toISOString()}
   return (
     <div className="animate-fade-in pb-20">
       {/* Header Area */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-6">
+      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-6 gap-6">
         <div>
-          <h1 className="text-3xl font-black text-white tracking-tight mb-1">{plan.branding.name}</h1>
+          <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight mb-1">{plan.branding.name}</h1>
           <p className="text-sm text-gray-400 font-mono">{plan.branding.tagline}</p>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 md:gap-3 w-full xl:w-auto">
            <button 
             onClick={onSave}
-            className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md text-xs font-medium text-gray-300 transition-colors flex items-center gap-2"
+            className="flex-1 xl:flex-none px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md text-xs font-medium text-gray-300 transition-colors flex justify-center items-center gap-2"
           >
             {getLabel(language, 'saveBtn')}
           </button>
            <button 
             onClick={onReset}
-            className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md text-xs font-medium text-gray-300 transition-colors"
+            className="flex-1 xl:flex-none px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md text-xs font-medium text-gray-300 transition-colors text-center"
           >
             {getLabel(language, 'newIdea')}
           </button>
@@ -155,14 +155,14 @@ Timestamp: ${new Date().toISOString()}
           {deploymentStatus === 'idle' && (
             <button 
               onClick={handleDeployClick}
-              className="px-6 py-2 bg-bizflow-600 hover:bg-bizflow-500 text-white font-bold rounded-md shadow-lg transform hover:-translate-y-0.5 transition-all flex items-center gap-2 text-xs uppercase tracking-wide"
+              className="w-full xl:w-auto px-6 py-2 bg-bizflow-600 hover:bg-bizflow-500 text-white font-bold rounded-md shadow-lg transform hover:-translate-y-0.5 transition-all flex justify-center items-center gap-2 text-xs uppercase tracking-wide"
             >
               {getLabel(language, 'deployBtn')}
             </button>
           )}
 
           {deploymentStatus === 'deploying' && (
-             <button disabled className="px-6 py-2 bg-gray-800 text-gray-400 font-bold rounded-md cursor-wait flex items-center gap-2 text-xs uppercase tracking-wide">
+             <button disabled className="w-full xl:w-auto px-6 py-2 bg-gray-800 text-gray-400 font-bold rounded-md cursor-wait flex justify-center items-center gap-2 text-xs uppercase tracking-wide">
                <svg className="animate-spin h-4 w-4 text-bizflow-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -174,7 +174,7 @@ Timestamp: ${new Date().toISOString()}
           {deploymentStatus === 'deployed' && (
              <button 
                onClick={() => setIsDeploymentModalOpen(true)}
-               className="px-6 py-2 bg-green-600 hover:bg-green-500 text-white font-bold rounded-md flex items-center gap-2 animate-pulse text-xs uppercase tracking-wide"
+               className="w-full xl:w-auto px-6 py-2 bg-green-600 hover:bg-green-500 text-white font-bold rounded-md flex justify-center items-center gap-2 animate-pulse text-xs uppercase tracking-wide"
              >
                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
@@ -185,15 +185,15 @@ Timestamp: ${new Date().toISOString()}
         </div>
       </div>
 
-      {/* Toolbar / Tabs (Figma Style) */}
-      <div className="flex justify-center mb-8 sticky top-20 z-40">
-        <div className="flex bg-[#1e1e1e] border border-white/10 rounded-full p-1 shadow-2xl backdrop-blur-md overflow-x-auto max-w-full">
+      {/* Toolbar / Tabs (Mobile Scrollable) */}
+      <div className="flex justify-start md:justify-center mb-8 sticky top-16 md:top-20 z-40 -mx-4 px-4 md:mx-0 md:px-0">
+        <div className="flex bg-[#1e1e1e] border border-white/10 rounded-xl md:rounded-full p-1 shadow-2xl backdrop-blur-md overflow-x-auto max-w-full scrollbar-hide">
           {Object.values(SectionType).map((type) => (
             <button
               key={type}
               onClick={() => setActiveTab(type)}
               className={`
-                px-4 py-2 rounded-full font-medium text-xs transition-all whitespace-nowrap
+                px-4 py-2 rounded-lg md:rounded-full font-medium text-xs transition-all whitespace-nowrap
                 ${activeTab === type 
                   ? 'bg-bizflow-600 text-white shadow-md' 
                   : 'text-gray-400 hover:text-white hover:bg-white/5'
@@ -213,7 +213,7 @@ Timestamp: ${new Date().toISOString()}
            {renderContent()}
          </div>
 
-         {/* Right: Live Preview */}
+         {/* Right: Live Preview - Hidden on Mobile, Visible on XL */}
          <div className="xl:col-span-4 relative hidden xl:block">
             <div className="sticky top-32">
               <LivePreview plan={plan} activeTab={activeTab} />

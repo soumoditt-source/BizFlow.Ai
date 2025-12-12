@@ -6,7 +6,7 @@ export enum SectionType {
   CODE = 'Code',
   PITCH = 'Pitch',
   GTM = 'GTM',
-  COMPLIANCE = 'Compliance', // New Section
+  COMPLIANCE = 'Compliance', 
 }
 
 export enum Language {
@@ -31,7 +31,7 @@ export interface UserProfile {
   id: string;
   email: string;
   name: string;
-  isAdmin: boolean; // Admin Flag
+  isAdmin: boolean;
   createdAt: string;
 }
 
@@ -40,7 +40,7 @@ export interface DeploymentRecord {
   userEmail: string;
   projectName: string;
   valuation: string;
-  royaltyStake: string; // "13%"
+  royaltyStake: string;
   deployedAt: string;
   contractHash: string;
 }
@@ -62,7 +62,7 @@ export interface CompliancePolicy {
     actionRequired: string;
   }[];
   dataPrivacyLevel: string;
-  riskScore: number; // 1-100
+  riskScore: number;
 }
 
 export interface BusinessBlueprint {
@@ -78,6 +78,8 @@ export interface BusinessBlueprint {
     tam: string;
     sam: string;
     som: string;
+    insight: string; 
+    citations: string[]; // List of sources
   };
   pricingStrategy: string;
   competitiveLandscape: {
@@ -165,5 +167,6 @@ export interface StartupPlan {
   code: MVPCode;
   pitchDeck: PitchDeckSlide[];
   gtm: GTMStrategy;
-  compliance: CompliancePolicy; // New Field
+  compliance: CompliancePolicy;
+  livePrototypeHTML?: string; // Full HTML/JS App
 }

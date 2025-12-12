@@ -92,7 +92,7 @@ const App: React.FC = () => {
               <IdeaInput onSubmit={handleIdeaSubmit} isGenerating={loading} language={language} />
             )}
 
-            {loading && <LoadingScreen />}
+            {loading && <LoadingScreen language={language} />}
 
             {plan && !loading && (
               <Dashboard 

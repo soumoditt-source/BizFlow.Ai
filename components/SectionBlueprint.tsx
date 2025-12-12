@@ -41,6 +41,26 @@ const SectionBlueprint: React.FC<Props> = ({ data, language }) => {
             <span className="text-xs text-gray-400 uppercase">{getLabel(language, 'som')}</span>
         </div>
       </div>
+      
+      {/* Insight & Citations */}
+      <div className="bg-dark-card border border-bizflow-900/50 p-6 rounded-xl">
+         <h3 className="text-bizflow-400 font-semibold uppercase tracking-wider text-xs mb-3">{getLabel(language, 'marketStats')}</h3>
+         <p className="text-gray-300 mb-4 italic">"{data.marketResearch.insight}"</p>
+         
+         {data.marketResearch.citations && data.marketResearch.citations.length > 0 && (
+           <div className="bg-black/30 p-3 rounded border border-gray-800">
+             <h4 className="text-[10px] text-gray-500 uppercase font-bold mb-2">{getLabel(language, 'citations')}</h4>
+             <ul className="text-xs text-gray-400 space-y-1">
+               {data.marketResearch.citations.map((cite, i) => (
+                 <li key={i} className="flex items-center gap-2">
+                   <span className="w-1 h-1 rounded-full bg-bizflow-500"></span>
+                   {cite}
+                 </li>
+               ))}
+             </ul>
+           </div>
+         )}
+      </div>
 
       {/* Personas & Competitors */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

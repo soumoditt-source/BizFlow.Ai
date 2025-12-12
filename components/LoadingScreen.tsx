@@ -1,24 +1,30 @@
 import React, { useEffect, useState } from 'react';
+import { getLabel } from '../utils/i18n';
+import { Language } from '../types';
 
-const steps = [
-  "Analyzing Market Opportunity...",
-  "Constructing Financial Models...",
-  "Designing Brand Identity...",
-  "Architecting Product Stack...",
-  "Generating MVP Code...",
-  "Refining GTM Strategy...",
-  "Finalizing Pitch Deck..."
-];
+interface Props {
+  language?: Language;
+}
 
-const LoadingScreen: React.FC = () => {
+const LoadingScreen: React.FC<Props> = ({ language = Language.ENGLISH }) => {
   const [currentStep, setCurrentStep] = useState(0);
+
+  const steps = [
+    getLabel(language, 'loading_market'),
+    getLabel(language, 'loading_finance'),
+    getLabel(language, 'loading_brand'),
+    getLabel(language, 'loading_tech'),
+    getLabel(language, 'loading_code'),
+    getLabel(language, 'loading_gtm'),
+    getLabel(language, 'loading_pitch')
+  ];
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentStep((prev) => (prev + 1) % steps.length);
     }, 1500);
     return () => clearInterval(interval);
-  }, []);
+  }, [language]);
 
   return (
     <div className="flex flex-col items-center justify-center py-32 animate-fade-in">

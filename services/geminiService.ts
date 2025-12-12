@@ -43,7 +43,7 @@ export const improveIdea = async (rawIdea: string, language: Language): Promise<
     return response.text || rawIdea;
   } catch (error) {
     console.error("Enhancement failed:", error);
-    return rawIdea; // Fallback to original if API fails
+    return rawIdea;
   }
 };
 
@@ -55,24 +55,21 @@ export const generateStartupPlan = async (idea: string, language: Language): Pro
     You are BizFlow-Core-AGI, the Supreme AI Founder Suite.
     
     TASK:
-    Generate a COMPLETE, UNIQUE, and BESPOKE startup plan for: "${idea}".
+    Generate a COMPLETE, UNIQUE, and PRODUCTION-READY startup plan for: "${idea}".
     Language: ${language}.
     
-    CREATIVITY INSTRUCTION:
-    - Do NOT use generic templates.
-    - Invent a unique brand name (not "EasyDeliver" or "QuickFix").
-    - Generate specific, calculated financial projections based on real market data for this specific niche.
-    - The "Competitive Advantage" must be a killer feature, not generic "better service".
-    
-    CRITICAL REQUIREMENTS:
-    1.  **Compliance:** Analyze local laws for the language region (e.g., India for Hindi/Bengali, EU for German/French).
-    2.  **Briefness:** High impact, low word count.
-    3.  **Financials:** Currency must match region (INR, EUR, USD, etc.).
+    CRITICAL INSTRUCTIONS:
+    1. **Production Code:** The 'code' section must contain REAL, WORKING boilerplate code, not placeholders.
+    2. **Market Research:** Provide specific numbers (TAM/SAM/SOM) and **CITATIONS** (e.g., "Gartner 2023", "Statista 2024"). Keep the 'insight' brief and punchy (max 2 sentences).
+    3. **Live Prototype:** In the 'livePrototypeHTML' field, generate a SINGLE FILE, SELF-CONTAINED HTML string that includes React (via CDN), TailwindCSS, and Babel. 
+       - It must be a fully functional "MVP" dashboard or landing page for the user's specific idea.
+       - Use 'lucide-react' for icons if needed (via CDN).
+       - It should look amazing (dark mode, glassmorphism).
+       - It must be ready to run just by saving as .html.
     
     Output strictly valid JSON matching the schema.
   `;
 
-  // Extended Schema to include Compliance
   const jsonSchema = {
     type: Type.OBJECT,
     properties: {
@@ -83,7 +80,7 @@ export const generateStartupPlan = async (idea: string, language: Language): Pro
           solution: { type: Type.STRING },
           usp: { type: Type.STRING },
           userPersonas: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, description: { type: Type.STRING }, painPoints: { type: Type.ARRAY, items: { type: Type.STRING } } } } },
-          marketResearch: { type: Type.OBJECT, properties: { tam: { type: Type.STRING }, sam: { type: Type.STRING }, som: { type: Type.STRING } } },
+          marketResearch: { type: Type.OBJECT, properties: { tam: { type: Type.STRING }, sam: { type: Type.STRING }, som: { type: Type.STRING }, insight: { type: Type.STRING }, citations: { type: Type.ARRAY, items: { type: Type.STRING } } } },
           pricingStrategy: { type: Type.STRING },
           competitiveLandscape: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { competitor: { type: Type.STRING }, weakness: { type: Type.STRING }, bizflowAdvantage: { type: Type.STRING } } } }
         }
@@ -135,7 +132,8 @@ export const generateStartupPlan = async (idea: string, language: Language): Pro
           dataPrivacyLevel: { type: Type.STRING },
           riskScore: { type: Type.NUMBER }
         }
-      }
+      },
+      livePrototypeHTML: { type: Type.STRING, description: "A complete, single-file HTML string containing a React application (using Babel standalone) that serves as a functional MVP prototype for this specific business idea. Include TailwindCSS via CDN." }
     }
   };
 
@@ -146,7 +144,7 @@ export const generateStartupPlan = async (idea: string, language: Language): Pro
       systemInstruction, 
       responseMimeType: 'application/json', 
       responseSchema: jsonSchema,
-      temperature: 0.9, // Higher temperature for unique creativity
+      temperature: 0.9,
       topK: 40,
       topP: 0.95
     },
@@ -157,7 +155,6 @@ export const generateStartupPlan = async (idea: string, language: Language): Pro
 
   try {
     const data = JSON.parse(text) as StartupPlan;
-    // Inject Contract but keep it technically hidden in the UI until deployment triggers transparency
     if (data.code) data.code.legalDoc = LEGAL_CONTRACT_TEMPLATE;
     return data;
   } catch (e) {
@@ -171,7 +168,7 @@ export const generateMarketingAsset = async (brandName: string): Promise<string>
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image', // Using Flash Image for speed, upgrade to 'gemini-3-pro-image-preview' if high quality needed
+      model: 'gemini-2.5-flash-image',
       contents: {
         parts: [
           {
@@ -181,12 +178,11 @@ export const generateMarketingAsset = async (brandName: string): Promise<string>
       },
       config: {
         imageConfig: {
-          aspectRatio: "16:9", // We will crop to 2:1 on frontend if needed, or use as is for general assets
+          aspectRatio: "16:9",
         }
       }
     });
 
-    // Extract image
     for (const part of response.candidates?.[0]?.content?.parts || []) {
       if (part.inlineData) {
         return `data:image/png;base64,${part.inlineData.data}`;

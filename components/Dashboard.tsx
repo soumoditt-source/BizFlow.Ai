@@ -40,9 +40,9 @@ const Dashboard: React.FC<DashboardProps> = ({ plan, onReset, onSave, language }
         AuthService.recordDeployment(user.email, plan);
     }
 
-    // 2. Generate "Free Hosting" Link (Blob URL)
-    const generateLiveLink = () => {
-       const htmlContent = `
+    // 2. Generate "Live Hosting" Link using the AI-generated HTML
+    // Fallback if AI didn't generate HTML for some reason
+    const prototypeHTML = plan.livePrototypeHTML || `
          <!DOCTYPE html>
          <html>
          <head>
@@ -67,15 +67,15 @@ const Dashboard: React.FC<DashboardProps> = ({ plan, onReset, onSave, language }
             </div>
          </body>
          </html>
-       `;
-       const blob = new Blob([htmlContent], { type: 'text/html' });
-       return URL.createObjectURL(blob);
-    };
+    `;
+
+    const blob = new Blob([prototypeHTML], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
 
     setTimeout(() => {
       setDeploymentStatus('deployed');
       setActiveTab(SectionType.CODE);
-      setLiveUrl(generateLiveLink());
+      setLiveUrl(url);
       
       // 3. Trigger Email Client
       const subject = `BIZFLOW DEPLOYMENT: ${plan.branding.name}`;
@@ -150,7 +150,7 @@ const Dashboard: React.FC<DashboardProps> = ({ plan, onReset, onSave, language }
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                </svg>
-               Signing Contracts...
+               {getLabel(language, 'signing')}
              </button>
           )}
 
@@ -164,7 +164,7 @@ const Dashboard: React.FC<DashboardProps> = ({ plan, onReset, onSave, language }
                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
                </svg>
-               LAUNCH PROTOTYPE
+               {getLabel(language, 'launchBtn')}
              </a>
           )}
         </div>

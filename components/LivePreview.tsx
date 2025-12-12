@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StartupPlan, SectionType } from '../types';
 
 interface Props {
@@ -7,12 +7,34 @@ interface Props {
 }
 
 const LivePreview: React.FC<Props> = ({ plan, activeTab }) => {
+  // Create a blob URL for the iframe to ensure isolation and proper rendering of the HTML string
+  const previewUrl = useMemo(() => {
+    if (!plan.livePrototypeHTML) return null;
+    const blob = new Blob([plan.livePrototypeHTML], { type: 'text/html' });
+    return URL.createObjectURL(blob);
+  }, [plan.livePrototypeHTML]);
+
   // Helper to determine what to show based on tab
   const renderPreviewContent = () => {
+    // If we are on the Blueprint or general tabs, show the actual site
+    if (activeTab === SectionType.BLUEPRINT || activeTab === SectionType.PRODUCT || activeTab === SectionType.GTM) {
+      if (previewUrl) {
+        return (
+          <iframe 
+            src={previewUrl} 
+            className="w-full h-full bg-white border-none"
+            title="Live Prototype"
+            sandbox="allow-scripts allow-modals"
+          />
+        );
+      }
+    }
+
+    // Specialized views for specific tabs
     switch (activeTab) {
       case SectionType.FINANCIALS:
         return (
-          <div className="space-y-4 pt-10">
+          <div className="space-y-4 pt-10 px-4">
             <div className="bg-white/5 p-4 rounded-xl border border-white/10">
               <h4 className="text-[10px] uppercase text-gray-500 mb-1">Projected MRR</h4>
               <div className="text-3xl font-bold text-white">
@@ -37,7 +59,7 @@ const LivePreview: React.FC<Props> = ({ plan, activeTab }) => {
       
       case SectionType.BRANDING:
         return (
-          <div className="text-center space-y-6 flex flex-col items-center justify-center h-full">
+          <div className="text-center space-y-6 flex flex-col items-center justify-center h-full px-4">
             <div 
               className="w-20 h-20 mx-auto rounded-2xl flex items-center justify-center text-3xl font-bold shadow-2xl"
               style={{ backgroundColor: plan.branding.colors[0]?.hex || '#14b8a6', color: '#fff' }}
@@ -58,7 +80,7 @@ const LivePreview: React.FC<Props> = ({ plan, activeTab }) => {
 
       case SectionType.CODE:
         return (
-           <div className="bg-[#1e1e1e] p-4 rounded-lg font-mono text-[9px] text-gray-300 overflow-hidden relative h-full flex flex-col border border-white/5 mt-4">
+           <div className="bg-[#1e1e1e] p-4 rounded-lg font-mono text-[9px] text-gray-300 overflow-hidden relative h-full flex flex-col border border-white/5 m-4">
               <div className="text-green-400 mb-2 font-bold">$ npm run deploy</div>
               <div className="opacity-70 space-y-1 flex-1">
                  <div>{`> Building ${plan.branding.name}...`}</div>
@@ -71,35 +93,20 @@ const LivePreview: React.FC<Props> = ({ plan, activeTab }) => {
            </div>
         );
 
-      default: // Default Landing Page View
+      default: 
+        // Fallback for Pitch/Compliance or if URL missing
+        if (previewUrl) {
+          return (
+             <iframe 
+               src={previewUrl} 
+               className="w-full h-full bg-white border-none"
+               title="Live Prototype"
+             />
+          );
+        }
         return (
-          <div className="space-y-6 h-full flex flex-col pt-8">
-            {/* Hero */}
-            <div className="space-y-3 mt-4">
-              <h2 className="text-2xl font-black leading-tight tracking-tight text-white">
-                {plan.branding.name}
-              </h2>
-              <p className="text-xs text-gray-400 leading-relaxed">
-                {plan.blueprint.usp}
-              </p>
-              <button 
-                className="mt-4 px-6 py-2.5 rounded-full text-xs font-bold text-white w-full shadow-lg"
-                style={{ backgroundColor: plan.branding.colors[0]?.hex || '#14b8a6' }}
-              >
-                Get Started
-              </button>
-            </div>
-
-            {/* Feature Snippet */}
-            <div className="bg-white/5 p-4 rounded-xl border border-white/10 mt-auto mb-4 backdrop-blur-md">
-               <div className="flex items-center gap-2 mb-2">
-                 <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                 <span className="text-[9px] uppercase font-bold text-gray-500">Core Feature</span>
-               </div>
-               <p className="text-[10px] text-gray-300 line-clamp-3 leading-relaxed">
-                 {plan.blueprint.solution}
-               </p>
-            </div>
+          <div className="flex items-center justify-center h-full text-gray-500 text-xs">
+            Loading Preview...
           </div>
         );
     }
@@ -107,10 +114,10 @@ const LivePreview: React.FC<Props> = ({ plan, activeTab }) => {
 
   return (
     <div className="w-full flex justify-center perspective-[1000px]">
-       <div className="relative w-[300px] h-[600px] bg-black border-[6px] border-[#1a1a1a] rounded-[40px] shadow-2xl overflow-hidden ring-1 ring-white/10">
+       <div className="relative w-[300px] h-[600px] bg-black border-[6px] border-[#1a1a1a] rounded-[40px] shadow-2xl overflow-hidden ring-1 ring-white/10 transition-transform hover:scale-[1.02] duration-300">
          
          {/* Dynamic Island / Notch */}
-         <div className="absolute top-0 left-1/2 transform -translate-x-1/2 h-7 w-28 bg-black rounded-b-xl z-50 flex items-center justify-center">
+         <div className="absolute top-0 left-1/2 transform -translate-x-1/2 h-7 w-28 bg-black rounded-b-xl z-50 flex items-center justify-center pointer-events-none">
             <div className="w-16 h-4 bg-[#111] rounded-full flex items-center gap-2 px-2">
                <div className="w-1.5 h-1.5 rounded-full bg-[#333]"></div>
                <div className="w-1 h-1 rounded-full bg-blue-900/50"></div>
@@ -118,9 +125,9 @@ const LivePreview: React.FC<Props> = ({ plan, activeTab }) => {
          </div>
 
          {/* Screen */}
-         <div className="w-full h-full bg-[#050505] overflow-y-auto scrollbar-hide relative text-white">
+         <div className="w-full h-full bg-[#050505] overflow-y-auto scrollbar-hide relative text-white flex flex-col">
             {/* Status Bar */}
-            <div className="h-8 w-full flex justify-between items-center px-5 pt-2 text-[10px] font-medium text-white/90 z-40 relative">
+            <div className="h-8 w-full flex justify-between items-center px-5 pt-2 text-[10px] font-medium text-white/90 z-40 relative bg-black/50 backdrop-blur-sm shrink-0">
                <span>9:41</span>
                <div className="flex gap-1">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3"><path d="M10 2a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 2zM10 15a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 15zM10 7a3 3 0 100 6 3 3 0 000-6zM15.657 5.757a.75.75 0 00-1.06-1.06l-1.061 1.06a.75.75 0 001.06 1.06l1.06-1.06zM4.343 5.757a.75.75 0 011.06-1.06l1.061 1.06a.75.75 0 01-1.06 1.06l-1.06-1.06zM15.657 14.243a.75.75 0 01-1.06 1.06l-1.061-1.06a.75.75 0 011.06-1.06l1.06 1.06zM4.343 14.243a.75.75 0 001.06 1.06l1.061-1.06a.75.75 0 00-1.06-1.06l-1.06 1.06z" /></svg>
@@ -128,12 +135,12 @@ const LivePreview: React.FC<Props> = ({ plan, activeTab }) => {
                </div>
             </div>
 
-            <div className="p-4 h-[calc(100%-40px)]">
+            <div className="flex-1 w-full bg-white relative">
                {renderPreviewContent()}
             </div>
             
             {/* Home Indicator */}
-            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-white/20 rounded-full"></div>
+            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-black/20 rounded-full z-50"></div>
          </div>
          
          {/* Glossy Overlay */}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StartupPlan, Language } from '../types';
 import { getLabel } from '../utils/i18n';
 
@@ -11,16 +11,68 @@ interface Props {
 
 const DeploymentModal: React.FC<Props> = ({ isOpen, onClose, plan, language }) => {
   const [activeProvider, setActiveProvider] = useState<'vercel' | 'netlify' | 'firebase'>('vercel');
-  
+  const [deployState, setDeployState] = useState<'idle' | 'building' | 'success'>('idle');
+  const [logs, setLogs] = useState<string[]>([]);
+  const [deployedUrl, setDeployedUrl] = useState<string | null>(null);
+  const logsEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setDeployState('idle');
+      setLogs([]);
+      setDeployedUrl(null);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (logsEndRef.current) {
+      logsEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [logs]);
+
   if (!isOpen) return null;
 
+  const handleSimulateDeploy = () => {
+    setDeployState('building');
+    setLogs([]);
+    
+    const steps = [
+      `> Initiating ${activeProvider} build pipeline...`,
+      "> Cloning repository...",
+      "> Installing dependencies (React, Tailwind, Babel)...",
+      "> Running 'npm run build'...",
+      "> Optimizing static assets...",
+      "> Verifying 'founders_agreement.md' signature...",
+      "> Uploading build artifacts...",
+      "> Configuring Edge Network...",
+      `> Deployment Complete: ${plan.branding.name} is LIVE.`
+    ];
+
+    let stepIndex = 0;
+    const interval = setInterval(() => {
+      if (stepIndex >= steps.length) {
+        clearInterval(interval);
+        setDeployState('success');
+        
+        // Generate the Blob URL (The "Unlimited Wireframe" trick)
+        if (plan.livePrototypeHTML) {
+            const blob = new Blob([plan.livePrototypeHTML], { type: 'text/html' });
+            setDeployedUrl(URL.createObjectURL(blob));
+        }
+      } else {
+        setLogs(prev => [...prev, steps[stepIndex]]);
+        stepIndex++;
+      }
+    }, 800);
+  };
+
   const handleLivePreview = () => {
-    if (plan.livePrototypeHTML) {
+    if (deployedUrl) {
+      window.open(deployedUrl, '_blank');
+    } else if (plan.livePrototypeHTML) {
        const blob = new Blob([plan.livePrototypeHTML], { type: 'text/html' });
        const url = URL.createObjectURL(blob);
        window.open(url, '_blank');
-    } else {
-      alert("Prototype compiling. Please wait.");
     }
   };
 
@@ -78,15 +130,6 @@ const DeploymentModal: React.FC<Props> = ({ isOpen, onClose, plan, language }) =
 
           <div className="mt-auto pt-6 border-t border-gray-800">
              <button 
-               onClick={handleLivePreview}
-               className="w-full py-3 bg-gradient-to-r from-bizflow-600 to-purple-600 hover:from-bizflow-500 hover:to-purple-500 text-white font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 mb-3 transition-transform hover:-translate-y-0.5"
-             >
-               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                  <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
-               </svg>
-               {getLabel(language, 'livePreview')}
-             </button>
-             <button 
                onClick={handleDownload}
                className="w-full py-3 bg-gray-800 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors text-sm"
              >
@@ -96,73 +139,68 @@ const DeploymentModal: React.FC<Props> = ({ isOpen, onClose, plan, language }) =
         </div>
 
         {/* Content Area */}
-        <div className="w-full md:w-2/3 p-8 overflow-y-auto bg-black text-gray-300 font-mono text-sm leading-relaxed relative">
+        <div className="w-full md:w-2/3 p-8 flex flex-col bg-black relative">
            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-bizflow-500 via-purple-500 to-pink-500"></div>
            
-           <h3 className="text-xl font-bold text-white mb-6 uppercase tracking-widest flex items-center gap-2">
-             <span className="w-2 h-2 bg-green-500 animate-pulse rounded-full"></span>
-             {getLabel(language, 'deployingTo')} {activeProvider.toUpperCase()}
-           </h3>
+           <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-white uppercase tracking-widest flex items-center gap-2">
+                <span className={`w-2 h-2 ${deployState === 'success' ? 'bg-green-500' : 'bg-amber-500'} animate-pulse rounded-full`}></span>
+                {getLabel(language, 'deployingTo')} {activeProvider.toUpperCase()}
+              </h3>
+              {deployState === 'idle' && (
+                <button 
+                  onClick={handleSimulateDeploy}
+                  className="px-6 py-2 bg-white text-black font-bold uppercase text-xs rounded hover:bg-gray-200 transition-colors"
+                >
+                  Start Deployment
+                </button>
+              )}
+           </div>
 
-           {activeProvider === 'vercel' && (
-             <div className="space-y-6 animate-fade-in">
-                <div className="bg-gray-900 p-4 rounded border border-gray-800">
-                  <p className="text-white font-bold mb-2">{getLabel(language, 'step1')}: Install Vercel CLI</p>
-                  <code className="block bg-black p-3 rounded text-green-400">$ npm i -g vercel</code>
+           <div className="flex-1 bg-gray-900/50 border border-gray-800 rounded-lg p-4 font-mono text-xs overflow-y-auto font-light text-green-400/80 shadow-inner">
+              {deployState === 'idle' ? (
+                <div className="h-full flex flex-col items-center justify-center text-gray-500 gap-4">
+                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 opacity-20">
+                     <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z" clipRule="evenodd" />
+                   </svg>
+                   <p>Ready to deploy production build...</p>
                 </div>
-                <div className="bg-gray-900 p-4 rounded border border-gray-800">
-                  <p className="text-white font-bold mb-2">{getLabel(language, 'step2')}: Deploy Artifact</p>
-                  <code className="block bg-black p-3 rounded text-green-400">
-                    $ vercel deploy --prod
-                  </code>
-                  <p className="mt-2 text-xs text-gray-500">Note: Ensure API_KEY is set in Vercel Dashboard Settings.</p>
-                </div>
-                <div className="p-4 bg-white/5 rounded border border-white/10">
-                   <h4 className="text-white font-bold mb-2">{getLabel(language, 'whyVercel')}</h4>
-                   <p className="text-xs">{getLabel(language, 'whyVercelDesc')}</p>
+              ) : (
+                <>
+                  {logs.map((log, i) => (
+                    <div key={i} className="mb-2">{log}</div>
+                  ))}
+                  {deployState === 'building' && (
+                    <div className="animate-pulse">_</div>
+                  )}
+                  <div ref={logsEndRef} />
+                </>
+              )}
+           </div>
+
+           {deployState === 'success' && (
+             <div className="mt-6 animate-fade-in-up">
+                <div className="bg-green-900/20 border border-green-500/30 p-4 rounded-lg flex items-center justify-between">
+                   <div>
+                      <h4 className="text-green-400 font-bold mb-1">Deployment Successful</h4>
+                      <p className="text-xs text-green-200/50">Your prototype is live and scalable.</p>
+                   </div>
+                   <button 
+                     onClick={handleLivePreview}
+                     className="px-6 py-3 bg-green-500 hover:bg-green-400 text-black font-bold uppercase rounded shadow-[0_0_20px_rgba(34,197,94,0.4)] transition-all flex items-center gap-2 text-xs"
+                   >
+                     Visit Live Site
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                       <path fillRule="evenodd" d="M5 10a.75.75 0 01.75-.75h6.638L10.23 7.29a.75.75 0 111.04-1.08l3.5 3.25a.75.75 0 010 1.08l-3.5 3.25a.75.75 0 11-1.04-1.08l2.158-1.96H5.75A.75.75 0 015 10z" clipRule="evenodd" />
+                     </svg>
+                   </button>
                 </div>
              </div>
            )}
 
-           {activeProvider === 'netlify' && (
-             <div className="space-y-6 animate-fade-in">
-                <div className="bg-gray-900 p-4 rounded border border-gray-800">
-                  <p className="text-white font-bold mb-2">{getLabel(language, 'methodA')}: {getLabel(language, 'dragDrop')}</p>
-                  <p>1. Run <code className="text-green-400">npm run build</code></p>
-                  <p>2. Drag `dist` folder to <a href="https://app.netlify.com/drop" target="_blank" className="text-blue-400 underline">app.netlify.com/drop</a></p>
-                </div>
-                <div className="bg-gray-900 p-4 rounded border border-gray-800">
-                  <p className="text-white font-bold mb-2">{getLabel(language, 'methodB')}: CLI</p>
-                  <code className="block bg-black p-3 rounded text-green-400">
-                    $ npm i -g netlify-cli<br/>
-                    $ netlify deploy --prod
-                  </code>
-                </div>
-             </div>
-           )}
-
-           {activeProvider === 'firebase' && (
-             <div className="space-y-6 animate-fade-in">
-                <div className="bg-gray-900 p-4 rounded border border-gray-800">
-                  <p className="text-white font-bold mb-2">{getLabel(language, 'step1')}: Initialize</p>
-                  <code className="block bg-black p-3 rounded text-green-400">
-                    $ firebase login<br/>
-                    $ firebase init hosting
-                  </code>
-                </div>
-                <div className="bg-gray-900 p-4 rounded border border-gray-800">
-                  <p className="text-white font-bold mb-2">{getLabel(language, 'step2')}: Deploy</p>
-                  <code className="block bg-black p-3 rounded text-green-400">
-                    $ npm run build<br/>
-                    $ firebase deploy
-                  </code>
-                </div>
-             </div>
-           )}
-
-           <div className="mt-8 pt-8 border-t border-gray-800">
+           <div className="mt-8 pt-6 border-t border-gray-800 text-right">
               <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors text-xs uppercase tracking-wider">
-                 {getLabel(language, 'cancelDeploy')}
+                 Close Terminal
               </button>
            </div>
         </div>

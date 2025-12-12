@@ -59,13 +59,21 @@ export const generateStartupPlan = async (idea: string, language: Language): Pro
     Target Language: ${language}.
     
     CRITICAL INSTRUCTIONS:
-    1. **Production Code:** The 'code' section must contain REAL, WORKING boilerplate code, not placeholders.
-    2. **Market Research:** Provide specific numbers (TAM/SAM/SOM). REQUIRED: Provide 3 real-world **citations** in the 'citations' array (e.g., "Gartner 2023: AI Market Report").
-    3. **Live Prototype:** In the 'livePrototypeHTML' field, generate a SINGLE FILE, SELF-CONTAINED HTML string that includes React (via CDN), TailwindCSS, and Babel. 
-       - It must be a fully functional "MVP" dashboard or landing page for the user's specific idea.
-       - Use 'lucide-react' for icons if needed (via CDN).
-       - It should look amazing (dark mode, glassmorphism, animations).
-       - It must be ready to run just by saving as .html.
+    1. **Production Code:** The 'code' section must contain REAL, WORKING boilerplate code.
+    2. **Market Research:** Provide specific numbers (TAM/SAM/SOM) and 3 real-world citations.
+    3. **Live Prototype HTML (CRITICAL):** 
+       - Generate a SINGLE, SELF-CONTAINED HTML string.
+       - MUST include these CDNs in the <head>:
+         - <script src="https://cdn.tailwindcss.com"></script>
+         - <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+         - <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+         - <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+       - MUST define the React App inside a <script type="text/babel"> tag.
+       - MUST mount the React app to <div id="root"></div>.
+       - The design must be MODERN, HIGH-END, DARK MODE PREFERRED (or appropriate for brand), using Tailwind CSS classes.
+       - Include a Landing Page with: Hero Section, Feature Grid, Pricing Cards, and CTA.
+       - Do NOT use 'import' statements. Use React.useState, React.useEffect, etc.
+       - Ensure the HTML is valid and runnable immediately as a file.
     
     Output strictly valid JSON matching the schema.
   `;
@@ -133,7 +141,7 @@ export const generateStartupPlan = async (idea: string, language: Language): Pro
           riskScore: { type: Type.NUMBER }
         }
       },
-      livePrototypeHTML: { type: Type.STRING, description: "A complete, single-file HTML string containing a React application (using Babel standalone) that serves as a functional MVP prototype for this specific business idea. Include TailwindCSS via CDN. Ensure it is complete." }
+      livePrototypeHTML: { type: Type.STRING, description: "A complete, single-file HTML string containing a React application (using Babel standalone) that serves as a functional MVP prototype. MUST use CDN for React, ReactDOM, Babel, and Tailwind. MUST NOT use import statements." }
     }
   };
 

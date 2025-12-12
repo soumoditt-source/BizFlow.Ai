@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { AuthService } from '../services/authService';
-import { DeploymentRecord } from '../types';
+import { LoggerService } from '../services/loggerService';
+import { DeploymentRecord, AuditLog, UserFeedback } from '../types';
 import { generateMarketingAsset } from '../services/geminiService';
 
 interface Props {
@@ -9,21 +10,25 @@ interface Props {
 
 const AdminPanel: React.FC<Props> = ({ onClose }) => {
   const [ledger, setLedger] = useState<DeploymentRecord[]>([]);
-  const [activeTab, setActiveTab] = useState<'ledger' | 'protocols' | 'press'>('ledger');
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [feedback, setFeedback] = useState<UserFeedback[]>([]);
+  
+  const [activeTab, setActiveTab] = useState<'ledger' | 'telemetry' | 'feedback' | 'protocols' | 'press'>('ledger');
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
 
   useEffect(() => {
     setLedger(AuthService.getGlobalLedger());
+    setAuditLogs(LoggerService.getLogs());
+    setFeedback(LoggerService.getFeedback());
   }, []);
 
-  const totalRoyalty = ledger.length * 1000; // Simulated Value
+  const totalRoyalty = ledger.length * 1000; 
 
   const handleGeneratePressKit = async () => {
     setIsGeneratingImage(true);
     setGeneratedImage(null);
     try {
-      // Use the most recent project name or default
       const brandName = ledger.length > 0 ? ledger[ledger.length - 1].projectName : "BizFlow AutoCEO";
       const image = await generateMarketingAsset(brandName);
       setGeneratedImage(image);
@@ -37,7 +42,7 @@ const AdminPanel: React.FC<Props> = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 z-[100] bg-black text-green-500 font-mono p-4 md:p-10 overflow-auto">
-      <div className="max-w-7xl mx-auto border border-green-500/50 shadow-[0_0_50px_rgba(34,197,94,0.2)] bg-black/90 p-6 rounded-xl">
+      <div className="max-w-7xl mx-auto border border-green-500/50 shadow-[0_0_50px_rgba(34,197,94,0.2)] bg-black/90 p-6 rounded-xl min-h-[80vh]">
         
         {/* Header */}
         <div className="flex justify-between items-center mb-8 border-b border-green-900 pb-4">
@@ -45,37 +50,27 @@ const AdminPanel: React.FC<Props> = ({ onClose }) => {
             <h1 className="text-3xl font-bold uppercase tracking-widest text-green-400 drop-shadow-lg">Supreme Architect Console</h1>
             <p className="text-xs text-green-700">USER: SOUMODITYA DAS | ID: ROOT | ACCESS: UNRESTRICTED</p>
           </div>
-          <button onClick={onClose} className="px-4 py-2 border border-green-700 hover:bg-green-900/50 text-xs uppercase">
+          <button onClick={onClose} className="px-4 py-2 border border-green-700 hover:bg-green-900/50 text-xs uppercase transition-colors">
             Terminate Session
           </button>
         </div>
 
         {/* Navigation */}
-        <div className="flex gap-4 mb-6">
-          <button 
-            onClick={() => setActiveTab('ledger')}
-            className={`px-4 py-2 text-sm uppercase font-bold border ${activeTab === 'ledger' ? 'bg-green-900/30 border-green-500 text-green-300' : 'border-transparent text-green-800'}`}
-          >
-            Live Ledger
-          </button>
-          <button 
-            onClick={() => setActiveTab('protocols')}
-            className={`px-4 py-2 text-sm uppercase font-bold border ${activeTab === 'protocols' ? 'bg-green-900/30 border-green-500 text-green-300' : 'border-transparent text-green-800'}`}
-          >
-            Production Protocols
-          </button>
-          <button 
-            onClick={() => setActiveTab('press')}
-            className={`px-4 py-2 text-sm uppercase font-bold border ${activeTab === 'press' ? 'bg-green-900/30 border-green-500 text-green-300' : 'border-transparent text-green-800'}`}
-          >
-            Press Kit Generator
-          </button>
+        <div className="flex flex-wrap gap-4 mb-6">
+          {['ledger', 'telemetry', 'feedback', 'protocols', 'press'].map(tab => (
+            <button 
+              key={tab}
+              onClick={() => setActiveTab(tab as any)}
+              className={`px-4 py-2 text-sm uppercase font-bold border transition-colors ${activeTab === tab ? 'bg-green-900/30 border-green-500 text-green-300' : 'border-transparent text-green-800 hover:border-green-800'}`}
+            >
+              {tab === 'ledger' ? 'Live Ledger' : tab === 'telemetry' ? 'Audit Stream' : tab}
+            </button>
+          ))}
         </div>
 
         {activeTab === 'ledger' && (
-          <>
-            {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="animate-fade-in">
+             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                <div className="bg-green-900/10 border border-green-800 p-4">
                   <div className="text-xs text-green-600 uppercase">Deployed Entities</div>
                   <div className="text-4xl font-bold">{ledger.length}</div>
@@ -95,44 +90,71 @@ const AdminPanel: React.FC<Props> = ({ onClose }) => {
                </div>
             </div>
 
-            {/* The Ledger */}
             <div className="bg-black border border-green-800 rounded-lg overflow-hidden">
-               <div className="bg-green-900/20 px-4 py-2 border-b border-green-800 flex justify-between items-center">
-                 <h3 className="uppercase tracking-wider font-bold text-sm">Global Deployment Ledger</h3>
-                 <span className="text-[10px] animate-pulse">RECEIVING TELEMETRY...</span>
-               </div>
                <table className="w-full text-left text-xs">
                  <thead className="bg-green-900/10 text-green-300">
                    <tr>
-                     <th className="p-3">Deployment ID</th>
-                     <th className="p-3">Project Name</th>
-                     <th className="p-3">Founder Email</th>
-                     <th className="p-3">Deployed At</th>
                      <th className="p-3">Contract Hash</th>
-                     <th className="p-3 text-right">Status</th>
+                     <th className="p-3">Signer</th>
+                     <th className="p-3">Gov ID</th>
+                     <th className="p-3">Contact</th>
+                     <th className="p-3">Deployed At</th>
                    </tr>
                  </thead>
                  <tbody className="divide-y divide-green-900/30">
-                   {ledger.length === 0 ? (
-                     <tr>
-                       <td colSpan={6} className="p-8 text-center text-green-800 italic">No entities deployed yet. Waiting for signals...</td>
+                   {ledger.map((rec) => (
+                     <tr key={rec.id} className="hover:bg-green-900/10 transition-colors">
+                       <td className="p-3 font-mono text-green-600">{rec.contractHash.substring(0,10)}...</td>
+                       <td className="p-3 font-bold text-white">{rec.signerName} ({rec.projectName})</td>
+                       <td className="p-3 font-mono">{rec.signerGovId}</td>
+                       <td className="p-3">{rec.signerPhone} <br/> <span className="text-[10px] text-gray-500">{rec.userEmail}</span></td>
+                       <td className="p-3">{new Date(rec.deployedAt).toLocaleDateString()}</td>
                      </tr>
-                   ) : (
-                     ledger.map((rec) => (
-                       <tr key={rec.id} className="hover:bg-green-900/10 transition-colors">
-                         <td className="p-3 font-mono text-green-600">{rec.id.substring(0,8)}...</td>
-                         <td className="p-3 font-bold text-white">{rec.projectName}</td>
-                         <td className="p-3">{rec.userEmail}</td>
-                         <td className="p-3">{new Date(rec.deployedAt).toLocaleString()}</td>
-                         <td className="p-3 font-mono text-[10px] text-green-700">{rec.contractHash.substring(0,15)}...</td>
-                         <td className="p-3 text-right text-green-400 font-bold">ACTIVE</td>
-                       </tr>
-                     ))
-                   )}
+                   ))}
                  </tbody>
                </table>
             </div>
-          </>
+          </div>
+        )}
+
+        {activeTab === 'telemetry' && (
+          <div className="bg-black border border-green-800 rounded-lg overflow-hidden animate-fade-in h-[500px] overflow-y-auto">
+             <div className="p-3 bg-green-900/20 border-b border-green-800 sticky top-0 font-bold text-sm uppercase">Live Audit Stream</div>
+             <table className="w-full text-left text-xs font-mono">
+               <tbody className="divide-y divide-green-900/30">
+                  {auditLogs.map((log) => (
+                    <tr key={log.id} className="hover:bg-green-900/5">
+                      <td className="p-2 w-32 text-gray-500">{new Date(log.timestamp).toLocaleTimeString()}</td>
+                      <td className="p-2 w-48 font-bold text-green-400">{log.action}</td>
+                      <td className="p-2 text-gray-300">{log.userEmail}</td>
+                      <td className="p-2 text-gray-400">{log.details}</td>
+                      <td className="p-2 w-24 text-right">
+                         <span className={`px-2 py-0.5 rounded ${log.riskLevel === 'CRITICAL' ? 'bg-red-900 text-red-200' : log.riskLevel === 'HIGH' ? 'bg-amber-900 text-amber-200' : 'text-gray-600'}`}>
+                           {log.riskLevel}
+                         </span>
+                      </td>
+                    </tr>
+                  ))}
+               </tbody>
+             </table>
+          </div>
+        )}
+
+        {activeTab === 'feedback' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
+             {feedback.map((fb) => (
+               <div key={fb.id} className="bg-green-900/10 border border-green-800 p-4 rounded hover:bg-green-900/20">
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="text-white font-bold">{fb.projectName}</span>
+                    <div className="flex text-amber-400">
+                       {'★'.repeat(fb.rating)}{'☆'.repeat(5-fb.rating)}
+                    </div>
+                  </div>
+                  <p className="text-gray-400 italic text-sm mb-2">"{fb.comment}"</p>
+                  <div className="text-[10px] text-green-700 uppercase">{fb.userEmail} • {new Date(fb.submittedAt).toLocaleDateString()}</div>
+               </div>
+             ))}
+          </div>
         )}
 
         {activeTab === 'protocols' && (
@@ -147,8 +169,8 @@ const AdminPanel: React.FC<Props> = ({ onClose }) => {
 docker run -p 3000:3000 bizflow-auto-ceo:v3`}
                </pre>
             </div>
-
-            <div className="bg-black border border-green-800 p-6 rounded-lg">
+            
+             <div className="bg-black border border-green-800 p-6 rounded-lg">
                <h3 className="text-green-300 font-bold mb-4">Step 2: Vercel Deployment</h3>
                <p className="text-green-700 text-sm mb-2">Push current artifact to Edge Network.</p>
                <pre className="bg-green-900/20 p-4 text-xs text-green-300 overflow-x-auto">
@@ -164,10 +186,6 @@ vercel deploy --prod --env API_KEY=$GEMINI_API_KEY`}
           <div className="space-y-6 animate-fade-in">
              <div className="bg-black border border-green-800 p-6 rounded-lg text-center">
                 <h2 className="text-2xl text-green-400 font-bold uppercase mb-4">Autonomous Marketing Agent</h2>
-                <p className="text-green-700 text-sm mb-6 max-w-xl mx-auto">
-                  Utilizes Gemini 3 Pro (Imagen 3) to generate high-fidelity, 8K resolution promotional assets for the Kaggle submission and Press Release distribution.
-                </p>
-                
                 <button 
                   onClick={handleGeneratePressKit}
                   disabled={isGeneratingImage}

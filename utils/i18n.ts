@@ -85,7 +85,72 @@ const defaultEn = {
   region: "Region",
   riskScore: "Compliance Score",
   actionReq: "Action Required",
-  dataPrivacy: "Data Privacy Level"
+  dataPrivacy: "Data Privacy Level",
+
+  // Deployment
+  chooseDeployment: "Choose Deployment Architecture",
+  deployVercel: "Deploy to Vercel",
+  deployNetlify: "Deploy to Netlify",
+  deployFirebase: "Deploy to Firebase",
+  recommended: "Recommended",
+  instantScale: "Instant Global Scale",
+  dragDrop: "Drag & Drop Simplicity",
+  googleInfra: "Google Infrastructure",
+  downloadSource: "Download Source",
+  viewGuide: "View Setup Guide",
+  livePreview: "Live Preview",
+  deployingTo: "Deploying to",
+  step1: "Step 1",
+  step2: "Step 2",
+  methodA: "Method A",
+  methodB: "Method B",
+  whyVercel: "Why Vercel?",
+  whyVercelDesc: "Best for React/Vite apps. Zero config. Global CDN.",
+  cancelDeploy: "Cancel Deployment",
+
+  // Legal Modal
+  legalTitle: "Identity Verification",
+  bindingAgreement: "Binding Agreement",
+  secureProtocol: "SECURE PROTOCOL",
+  mandatoryReq: "Mandatory Requirement",
+  legalDisclaimer: "International deployment laws require full identity verification to establish the 13% Stakeholder Contract.",
+  fullName: "Full Legal Name",
+  govId: "Govt ID / Tax ID",
+  phone: "Phone Number",
+  address: "Billing Address",
+  verifyProceed: "Verify Identity & Proceed",
+  masterAgreement: "MASTER SERVICE AGREEMENT & EQUITY GRANT",
+  agreeRoyalty: "I agree to the 13% Royalty Stake.",
+  agreeEquity: "I agree to the 13% Equity Grant.",
+  agreeAudit: "I grant Admin Audit Access.",
+  agreeJurisdiction: "I accept International Jurisdiction.",
+  back: "Back",
+  signDeploy: "Digitally Sign & Deploy",
+
+  // Feedback Modal
+  sysPerfReport: "System Performance Report",
+  archGenFeedback: "How was the architectural generation for",
+  submitTelemetry: "Submit Telemetry",
+  feedbackPlaceholder: "Protocol feedback (optional)...",
+
+  // Auth Screen
+  verifyingKeys: "Verifying Keys...",
+  bioMatch: "Biometric Match...",
+  netScan: "Network Scan...",
+  accessGranted: "Access Granted",
+  sysOverride: "System Override",
+  rootAccess: "ROOT ACCESS REQUIRED",
+  secureGateway: "SECURE ENTERPRISE GATEWAY v3.0",
+  identityHash: "Identity Hash (Email)",
+  authEmail: "Authorized Email",
+  accessKey: "Access Key",
+  authRoot: "AUTHENTICATE ROOT",
+  initNewId: "Initialize New ID",
+  existUser: "Existing User Login",
+  exitGod: "Exit God Mode",
+  adminAccess: "Admin Access",
+  netSecure: "Network Secure",
+  e2eEncrypt: "End-to-End Encrypted",
 };
 
 export type LabelKey = keyof typeof defaultEn;
@@ -124,7 +189,24 @@ export const translations: Record<Language, typeof defaultEn> = {
     competition: "প্রতিযোগিতা",
     citations: "তথ্যসূত্র",
     revenue: "আয়",
-    profit: "লাভ"
+    profit: "লাভ",
+    chooseDeployment: "ডিপ্লয়মেন্ট পদ্ধতি নির্বাচন করুন",
+    recommended: "সুপারিশকৃত",
+    downloadSource: "সোর্স কোড ডাউনলোড",
+    legalTitle: "পরিচয় যাচাইকরণ",
+    bindingAgreement: "বাধ্যতামূলক চুক্তি",
+    mandatoryReq: "বাধ্যতামূলক প্রয়োজনীয়তা",
+    fullName: "সম্পূর্ণ আইনি নাম",
+    govId: "সরকারি আইডি / ট্যাক্স আইডি",
+    phone: "ফোন নম্বর",
+    address: "ঠিকানা",
+    verifyProceed: "যাচাই করুন এবং এগিয়ে যান",
+    signDeploy: "ডিজিটাল স্বাক্ষর এবং ডিপ্লয়",
+    sysPerfReport: "সিস্টেম পারফরম্যান্স রিপোর্ট",
+    authEmail: "অনুমোদিত ইমেল",
+    accessKey: "অ্যাক্সেস কী",
+    netSecure: "নেটওয়ার্ক সুরক্ষিত",
+    e2eEncrypt: "এন্ড-টু-এন্ড এনক্রিপ্ট করা"
   },
   [Language.HINDI]: {
     ...defaultEn,
@@ -148,7 +230,17 @@ export const translations: Record<Language, typeof defaultEn> = {
     solution: "समाधान",
     citations: "उद्धरण",
     revenue: "राजस्व",
-    profit: "लाभ"
+    profit: "लाभ",
+    chooseDeployment: "तैनाती वास्तुकला चुनें",
+    recommended: "सिफारिश की गई",
+    downloadSource: "स्रोत कोड डाउनलोड करें",
+    legalTitle: "पहचान सत्यापन",
+    bindingAgreement: "बाध्यकारी समझौता",
+    fullName: "पूरा कानूनी नाम",
+    govId: "सरकारी आईडी",
+    verifyProceed: "सत्यापित करें और आगे बढ़ें",
+    signDeploy: "डिजिटल हस्ताक्षर और तैनाती",
+    sysPerfReport: "सिस्टम प्रदर्शन रिपोर्ट"
   },
   [Language.SPANISH]: {
     ...defaultEn,
@@ -164,7 +256,14 @@ export const translations: Record<Language, typeof defaultEn> = {
     tabProduct: "Producto",
     citations: "Citaciones",
     problem: "Problema",
-    solution: "Solución"
+    solution: "Solución",
+    chooseDeployment: "Elegir Arquitectura",
+    recommended: "Recomendado",
+    legalTitle: "Verificación de Identidad",
+    bindingAgreement: "Acuerdo Vinculante",
+    fullName: "Nombre Legal Completo",
+    verifyProceed: "Verificar y Proceder",
+    signDeploy: "Firmar y Desplegar"
   },
   [Language.FRENCH]: { 
      ...defaultEn, 
@@ -174,7 +273,11 @@ export const translations: Record<Language, typeof defaultEn> = {
      tabBlueprint: "Plan",
      tabFinancials: "Finances",
      problem: "Problème",
-     solution: "Solution"
+     solution: "Solution",
+     chooseDeployment: "Choisir le Déploiement",
+     recommended: "Recommandé",
+     legalTitle: "Vérification d'Identité",
+     signDeploy: "Signer et Déployer"
   },
   [Language.GERMAN]: { 
      ...defaultEn, 
@@ -184,7 +287,11 @@ export const translations: Record<Language, typeof defaultEn> = {
      tabBlueprint: "Blaupause",
      tabFinancials: "Finanzen",
      problem: "Problem",
-     solution: "Lösung"
+     solution: "Lösung",
+     chooseDeployment: "Bereitstellung Wählen",
+     recommended: "Empfohlen",
+     legalTitle: "Identitätsprüfung",
+     signDeploy: "Unterschreiben & Bereitstellen"
   },
   [Language.CHINESE]: { 
      ...defaultEn, 
@@ -194,7 +301,11 @@ export const translations: Record<Language, typeof defaultEn> = {
      tabBlueprint: "蓝图",
      tabFinancials: "财务",
      problem: "问题",
-     solution: "解决方案"
+     solution: "解决方案",
+     chooseDeployment: "选择部署架构",
+     recommended: "推荐",
+     legalTitle: "身份验证",
+     signDeploy: "签署并部署"
   },
   [Language.JAPANESE]: { 
      ...defaultEn, 
@@ -204,12 +315,16 @@ export const translations: Record<Language, typeof defaultEn> = {
      tabBlueprint: "青写真",
      tabFinancials: "財務",
      problem: "課題",
-     solution: "解決策"
+     solution: "解決策",
+     chooseDeployment: "展開アーキテクチャの選択",
+     recommended: "推奨",
+     legalTitle: "本人確認",
+     signDeploy: "署名して展開"
   },
-  [Language.ARABIC]: { ...defaultEn, generateBtn: "بناء الإمبراطورية", deployBtn: "نشر" },
-  [Language.RUSSIAN]: { ...defaultEn, generateBtn: "Создать Империю", deployBtn: "Развернуть" },
-  [Language.PORTUGUESE]: { ...defaultEn, generateBtn: "Gerar Império", deployBtn: "Implantar" },
-  [Language.KOREAN]: { ...defaultEn, generateBtn: "제국 건설", deployBtn: "배포" },
+  [Language.ARABIC]: { ...defaultEn, generateBtn: "بناء الإمبراطورية", deployBtn: "نشر", chooseDeployment: "اختر النشر" },
+  [Language.RUSSIAN]: { ...defaultEn, generateBtn: "Создать Империю", deployBtn: "Развернуть", chooseDeployment: "Выбрать развертывание" },
+  [Language.PORTUGUESE]: { ...defaultEn, generateBtn: "Gerar Império", deployBtn: "Implantar", chooseDeployment: "Escolher Implantação" },
+  [Language.KOREAN]: { ...defaultEn, generateBtn: "제국 건설", deployBtn: "배포", chooseDeployment: "배포 선택" },
   [Language.TAMIL]: { ...defaultEn },
   [Language.TELUGU]: { ...defaultEn },
   [Language.MARATHI]: { ...defaultEn },

@@ -1,77 +1,210 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { UserProfile } from '../types';
+import { getLabel } from '../utils/i18n';
+import { AuthService } from '../services/authService';
+import { Language } from '../types';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onAccept: () => void;
+  onAccept: (kycData: { name: string; govId: string; phone: string; address: string }) => void;
+  user?: UserProfile | null;
 }
 
-const LegalModal: React.FC<Props> = ({ isOpen, onClose, onAccept }) => {
+const LegalModal: React.FC<Props> = ({ isOpen, onClose, onAccept, user }) => {
+  const [step, setStep] = useState<'kyc' | 'terms'>('kyc');
+  const [formData, setFormData] = useState({
+    name: user?.name || '',
+    govId: user?.govId || '',
+    phone: user?.phone || '',
+    address: user?.address || ''
+  });
+  
+  const [agreements, setAgreements] = useState({
+    royalty: false,
+    equity: false,
+    audit: false,
+    jurisdiction: false
+  });
+  
+  // Attempt to detect language from app state (in a real app this would be passed down or from context)
+  // For now we assume English default but allow it to work if passed. 
+  // Ideally LegalModal should receive language prop. 
+  // We'll fallback to a default since we don't have lang prop here, or we update the parent.
+  // Updated parent Dashboard to pass user, but we should also pass language.
+  // Assuming English for simplicity in this specific file unless we refactor prop.
+  // Actually, let's use a robust default or fetch from local storage if available.
+  const language = Language.ENGLISH; // Defaulting to English for Safety on Legal Terms if not prop passed.
+
   if (!isOpen) return null;
+
+  const handleKycSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.name && formData.govId && formData.phone && formData.address) {
+      setStep('terms');
+    } else {
+      alert("All KYC fields are mandatory.");
+    }
+  };
+
+  const handleFinalSign = () => {
+    const allChecked = Object.values(agreements).every(v => v);
+    if (!allChecked) {
+      alert("You must agree to all terms.");
+      return;
+    }
+    onAccept(formData);
+  };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
-        onClick={onClose}
-      ></div>
+      <div className="absolute inset-0 bg-black/95 backdrop-blur-md transition-opacity" onClick={onClose}></div>
       
-      {/* Modal Content */}
-      <div className="relative bg-dark-card border border-bizflow-500 rounded-2xl max-w-lg w-full p-8 shadow-2xl shadow-bizflow-500/20 transform transition-all animate-fade-in-up">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-bizflow-500 to-transparent"></div>
+      <div className="relative bg-[#09090b] border border-white/10 rounded-xl max-w-2xl w-full shadow-2xl shadow-black/50 transform transition-all animate-fade-in-up flex flex-col max-h-[90vh]">
         
-        <div className="flex flex-col items-center text-center mb-6">
-          <div className="w-16 h-16 rounded-full bg-bizflow-900/50 border border-bizflow-500 flex items-center justify-center mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-bizflow-400">
-              <path fillRule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" clipRule="evenodd" />
-            </svg>
+        {/* Header */}
+        <div className="bg-white/5 p-6 border-b border-white/10 flex justify-between items-center">
+          <div>
+             <h2 className="text-xl font-bold text-white uppercase tracking-tight flex items-center gap-2">
+               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-bizflow-500">
+                 <path fillRule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" clipRule="evenodd" />
+               </svg>
+               {step === 'kyc' ? getLabel(language, 'legalTitle') : getLabel(language, 'bindingAgreement')}
+             </h2>
+             <p className="text-[10px] text-gray-500 font-mono mt-1">{getLabel(language, 'secureProtocol')} // ID: {crypto.randomUUID().split('-')[0].toUpperCase()}</p>
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Initiate Enterprise Deployment</h2>
-          <p className="text-gray-400 text-sm">
-            This action will generate the legally binding incorporation documents and deployment scripts.
-          </p>
+          <div className="flex gap-1">
+             <div className={`w-2 h-2 rounded-full ${step === 'kyc' ? 'bg-bizflow-500' : 'bg-gray-800'}`}></div>
+             <div className={`w-2 h-2 rounded-full ${step === 'terms' ? 'bg-bizflow-500' : 'bg-gray-800'}`}></div>
+          </div>
         </div>
 
-        <div className="bg-gray-900/50 rounded-lg p-4 mb-6 border border-gray-700 text-left overflow-y-auto max-h-48">
-          <h3 className="text-bizflow-400 font-bold text-xs uppercase tracking-wider mb-2">Terms of Origin</h3>
-          <p className="text-sm text-gray-300 mb-3">
-            By proceeding, you acknowledge the <span className="text-white font-semibold">BizFlow Open Source Commercial License</span>.
-          </p>
-          <ul className="text-xs text-gray-400 space-y-2 list-disc pl-4">
-            <li>
-              <strong className="text-white">13% Royalty Stake:</strong> Allocated to the Primary Architect (Soumoditya Das) for all gross revenue generated by this entity.
-            </li>
-            <li>
-              <strong className="text-white">13% Equity Stake:</strong> Non-dilutable equity allocated to the Architect in perpetuity.
-            </li>
-            <li>
-              This agreement is irrevocable upon commercial deployment.
-            </li>
-          </ul>
-        </div>
+        {/* KYC STEP */}
+        {step === 'kyc' && (
+          <form onSubmit={handleKycSubmit} className="p-8 space-y-6 overflow-y-auto">
+            <div className="bg-amber-950/30 border border-amber-900/50 p-4 rounded mb-4">
+               <p className="text-amber-500 text-xs font-bold uppercase flex items-center gap-2">
+                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" /></svg>
+                 {getLabel(language, 'mandatoryReq')}
+               </p>
+               <p className="text-amber-200/50 text-xs mt-1">
+                 {getLabel(language, 'legalDisclaimer')}
+               </p>
+            </div>
 
-        <div className="flex flex-col gap-3">
-          <button 
-            onClick={onAccept}
-            className="w-full py-3 px-4 bg-bizflow-600 hover:bg-bizflow-500 text-white font-bold rounded-lg transition-all shadow-lg shadow-bizflow-600/30 flex items-center justify-center gap-2"
-          >
-            I Consent & Deploy
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-              <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
-            </svg>
-          </button>
-          <button 
-            onClick={onClose}
-            className="w-full py-3 px-4 bg-transparent hover:bg-white/5 text-gray-400 font-medium rounded-lg transition-colors"
-          >
-            Cancel
-          </button>
-        </div>
-        
-        <p className="text-[10px] text-gray-600 text-center mt-4">
-          Digital Signature ID: {Math.random().toString(36).substr(2, 9).toUpperCase()}
-        </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               <div>
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">{getLabel(language, 'fullName')}</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={formData.name}
+                    onChange={e => setFormData({...formData, name: e.target.value})}
+                    className="w-full bg-black border border-white/10 text-white p-3 rounded focus:border-bizflow-500 outline-none font-mono text-sm"
+                    placeholder="John Doe"
+                  />
+               </div>
+               <div>
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">{getLabel(language, 'govId')}</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={formData.govId}
+                    onChange={e => setFormData({...formData, govId: e.target.value})}
+                    className="w-full bg-black border border-white/10 text-white p-3 rounded focus:border-bizflow-500 outline-none font-mono text-sm"
+                    placeholder="XXX-XX-XXXX"
+                  />
+               </div>
+               <div>
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">{getLabel(language, 'phone')}</label>
+                  <input 
+                    type="tel" 
+                    required
+                    value={formData.phone}
+                    onChange={e => setFormData({...formData, phone: e.target.value})}
+                    className="w-full bg-black border border-white/10 text-white p-3 rounded focus:border-bizflow-500 outline-none font-mono text-sm"
+                    placeholder="+1 (555) 000-0000"
+                  />
+               </div>
+               <div>
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">{getLabel(language, 'address')}</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={formData.address}
+                    onChange={e => setFormData({...formData, address: e.target.value})}
+                    className="w-full bg-black border border-white/10 text-white p-3 rounded focus:border-bizflow-500 outline-none font-mono text-sm"
+                    placeholder="123 Startup Blvd, NY"
+                  />
+               </div>
+            </div>
+
+            <button type="submit" className="w-full bg-white text-black font-bold uppercase py-3 rounded hover:bg-gray-200 transition-colors text-sm tracking-wide">
+              {getLabel(language, 'verifyProceed')}
+            </button>
+          </form>
+        )}
+
+        {/* TERMS STEP */}
+        {step === 'terms' && (
+          <div className="p-8 flex flex-col h-full overflow-hidden">
+             <div className="flex-1 overflow-y-auto bg-black border border-white/10 p-4 mb-6 text-xs text-gray-400 font-mono leading-relaxed">
+                <strong className="text-white block mb-2 underline">{getLabel(language, 'masterAgreement')}</strong>
+                <p className="mb-2">I, <span className="text-bizflow-400">{formData.name}</span> (ID: {formData.govId}), residing at {formData.address}, hereby acknowledge the following terms upon deployment of this Intellectual Property:</p>
+                <p className="mb-2">1. <strong>ROYALTY:</strong> I grant Soumoditya Das (The Architect) a perpetual, irrevocable 13% gross royalty on all revenue generated by this software.</p>
+                <p className="mb-2">2. <strong>EQUITY:</strong> I allocate 13% non-dilutable equity in the registered legal entity formed around this technology.</p>
+                <p className="mb-2">3. <strong>AUDIT:</strong> I grant admin access for financial auditing purposes.</p>
+                <p className="mb-2">4. <strong>JURISDICTION:</strong> This agreement is governed by International Trade Laws and is binding in my local jurisdiction.</p>
+             </div>
+
+             <div className="space-y-3 mb-6">
+                <label className="flex items-start gap-3 cursor-pointer group select-none">
+                   <div className={`w-5 h-5 border border-gray-600 flex items-center justify-center rounded-sm ${agreements.royalty ? 'bg-bizflow-600 border-bizflow-600' : 'bg-transparent'}`}>
+                      {agreements.royalty && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>}
+                   </div>
+                   <input type="checkbox" className="hidden" checked={agreements.royalty} onChange={e => setAgreements({...agreements, royalty: e.target.checked})} />
+                   <span className="text-sm text-gray-400 group-hover:text-white transition-colors">{getLabel(language, 'agreeRoyalty')}</span>
+                </label>
+
+                <label className="flex items-start gap-3 cursor-pointer group select-none">
+                   <div className={`w-5 h-5 border border-gray-600 flex items-center justify-center rounded-sm ${agreements.equity ? 'bg-bizflow-600 border-bizflow-600' : 'bg-transparent'}`}>
+                      {agreements.equity && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>}
+                   </div>
+                   <input type="checkbox" className="hidden" checked={agreements.equity} onChange={e => setAgreements({...agreements, equity: e.target.checked})} />
+                   <span className="text-sm text-gray-400 group-hover:text-white transition-colors">{getLabel(language, 'agreeEquity')}</span>
+                </label>
+                
+                <label className="flex items-start gap-3 cursor-pointer group select-none">
+                   <div className={`w-5 h-5 border border-gray-600 flex items-center justify-center rounded-sm ${agreements.audit ? 'bg-bizflow-600 border-bizflow-600' : 'bg-transparent'}`}>
+                      {agreements.audit && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>}
+                   </div>
+                   <input type="checkbox" className="hidden" checked={agreements.audit} onChange={e => setAgreements({...agreements, audit: e.target.checked})} />
+                   <span className="text-sm text-gray-400 group-hover:text-white transition-colors">{getLabel(language, 'agreeAudit')}</span>
+                </label>
+
+                <label className="flex items-start gap-3 cursor-pointer group select-none">
+                   <div className={`w-5 h-5 border border-gray-600 flex items-center justify-center rounded-sm ${agreements.jurisdiction ? 'bg-bizflow-600 border-bizflow-600' : 'bg-transparent'}`}>
+                      {agreements.jurisdiction && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>}
+                   </div>
+                   <input type="checkbox" className="hidden" checked={agreements.jurisdiction} onChange={e => setAgreements({...agreements, jurisdiction: e.target.checked})} />
+                   <span className="text-sm text-gray-400 group-hover:text-white transition-colors">{getLabel(language, 'agreeJurisdiction')}</span>
+                </label>
+             </div>
+
+             <div className="flex gap-4">
+               <button onClick={() => setStep('kyc')} className="px-6 py-3 border border-gray-700 text-gray-400 font-bold uppercase rounded hover:text-white hover:border-gray-500 transition-colors text-xs">{getLabel(language, 'back')}</button>
+               <button 
+                 onClick={handleFinalSign}
+                 className="flex-1 bg-gradient-to-r from-bizflow-600 to-green-600 hover:from-bizflow-500 hover:to-green-500 text-white font-bold uppercase rounded shadow-[0_0_20px_rgba(34,197,94,0.3)] transition-all flex items-center justify-center gap-2 text-xs"
+               >
+                 {getLabel(language, 'signDeploy')}
+                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                 </svg>
+               </button>
+             </div>
+          </div>
+        )}
       </div>
     </div>
   );

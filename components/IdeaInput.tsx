@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Language } from '../types';
 import { getLabel } from '../utils/i18n';
 import { improveIdea } from '../services/geminiService';
+import { LoggerService } from '../services/loggerService';
+import { AuthService } from '../services/authService';
 
 interface IdeaInputProps {
   onSubmit: (idea: string) => void;
@@ -16,6 +18,8 @@ const IdeaInput: React.FC<IdeaInputProps> = ({ onSubmit, isGenerating, language 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (idea.trim()) {
+      const user = AuthService.getCurrentUser();
+      LoggerService.log(user?.email || 'ANONYMOUS', 'IDEA_SUBMIT', `User submitted idea length: ${idea.length}`, 'MEDIUM');
       onSubmit(idea);
     }
   };
@@ -26,6 +30,8 @@ const IdeaInput: React.FC<IdeaInputProps> = ({ onSubmit, isGenerating, language 
     try {
       const improved = await improveIdea(idea, language);
       setIdea(improved.trim());
+      const user = AuthService.getCurrentUser();
+      LoggerService.log(user?.email || 'ANONYMOUS', 'IDEA_ENHANCE', 'AI Enhancement triggered', 'LOW');
     } catch (error) {
       console.error(error);
     } finally {
@@ -40,7 +46,7 @@ const IdeaInput: React.FC<IdeaInputProps> = ({ onSubmit, isGenerating, language 
           Turn your idea into a <span className="text-bizflow-400">Fortune 500</span> blueprint.
         </h1>
         <p className="text-lg text-dark-muted">
-           BizFlow AutoCEO: Multi-Agent AI System. Gemini 3 Pro Powered.
+           BizFlow AutoCEO: Multi-Agent Neural System. Enterprise Grade.
         </p>
       </div>
 

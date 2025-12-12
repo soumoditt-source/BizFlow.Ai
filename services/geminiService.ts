@@ -56,15 +56,15 @@ export const generateStartupPlan = async (idea: string, language: Language): Pro
     
     TASK:
     Generate a COMPLETE, UNIQUE, and PRODUCTION-READY startup plan for: "${idea}".
-    Language: ${language}.
+    Target Language: ${language}.
     
     CRITICAL INSTRUCTIONS:
     1. **Production Code:** The 'code' section must contain REAL, WORKING boilerplate code, not placeholders.
-    2. **Market Research:** Provide specific numbers (TAM/SAM/SOM) and **CITATIONS** (e.g., "Gartner 2023", "Statista 2024"). Keep the 'insight' brief and punchy (max 2 sentences).
+    2. **Market Research:** Provide specific numbers (TAM/SAM/SOM). REQUIRED: Provide 3 real-world **citations** in the 'citations' array (e.g., "Gartner 2023: AI Market Report").
     3. **Live Prototype:** In the 'livePrototypeHTML' field, generate a SINGLE FILE, SELF-CONTAINED HTML string that includes React (via CDN), TailwindCSS, and Babel. 
        - It must be a fully functional "MVP" dashboard or landing page for the user's specific idea.
        - Use 'lucide-react' for icons if needed (via CDN).
-       - It should look amazing (dark mode, glassmorphism).
+       - It should look amazing (dark mode, glassmorphism, animations).
        - It must be ready to run just by saving as .html.
     
     Output strictly valid JSON matching the schema.
@@ -133,7 +133,7 @@ export const generateStartupPlan = async (idea: string, language: Language): Pro
           riskScore: { type: Type.NUMBER }
         }
       },
-      livePrototypeHTML: { type: Type.STRING, description: "A complete, single-file HTML string containing a React application (using Babel standalone) that serves as a functional MVP prototype for this specific business idea. Include TailwindCSS via CDN." }
+      livePrototypeHTML: { type: Type.STRING, description: "A complete, single-file HTML string containing a React application (using Babel standalone) that serves as a functional MVP prototype for this specific business idea. Include TailwindCSS via CDN. Ensure it is complete." }
     }
   };
 

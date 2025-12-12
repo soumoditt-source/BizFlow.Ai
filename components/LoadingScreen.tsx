@@ -40,7 +40,7 @@ const LoadingScreen: React.FC<Props> = ({ language = Language.ENGLISH }) => {
       </p>
       
       <div className="mt-8 max-w-md text-center text-sm text-dark-muted">
-        Leveraging Gemini 3 Pro to reason through 1,000+ business variables specifically for your idea.
+        Leveraging Neural Architect to reason through 1,000+ business variables specifically for your idea.
       </div>
     </div>
   );

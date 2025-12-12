@@ -26,12 +26,12 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin, language }) => {
 
   const startSecurityScan = () => {
     setIsScanning(true);
-    // Simulation Sequence
+    // Simulation Sequence using Keys
     const steps = [
-        "Verifying Encryption Keys...",
-        "Biometric Hash Matching...",
-        "Scanning Network Integrity...",
-        "Access Granted."
+        getLabel(language, 'verifyingKeys'),
+        getLabel(language, 'bioMatch'),
+        getLabel(language, 'netScan'),
+        getLabel(language, 'accessGranted')
     ];
     
     let current = 0;
@@ -61,7 +61,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin, language }) => {
                         </svg>
                       </div>
                   </div>
-                  <h2 className="text-2xl font-black text-green-500 uppercase tracking-widest mb-2">Identity Verification</h2>
+                  <h2 className="text-2xl font-black text-green-500 uppercase tracking-widest mb-2">{getLabel(language, 'legalTitle')}</h2>
                   <div className="w-64 h-1 bg-gray-900 rounded-full overflow-hidden mb-4">
                       <div 
                         className="h-full bg-green-500 transition-all duration-300" 
@@ -69,7 +69,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin, language }) => {
                       ></div>
                   </div>
                   <p className="text-green-400 font-mono text-xs">{
-                      ["Verifying Keys...", "Biometric Match...", "Network Scan...", "Access Granted"][scanStep]
+                      [getLabel(language, 'verifyingKeys'), getLabel(language, 'bioMatch'), getLabel(language, 'netScan'), getLabel(language, 'accessGranted')][scanStep]
                   }</p>
               </div>
           </div>
@@ -99,17 +99,17 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin, language }) => {
             )}
           </div>
           <h2 className={`text-2xl font-black uppercase tracking-widest ${isAdminMode ? 'text-green-500' : 'text-white'}`}>
-            {isAdminMode ? 'System Override' : getLabel(language, 'loginTitle')}
+            {isAdminMode ? getLabel(language, 'sysOverride') : getLabel(language, 'loginTitle')}
           </h2>
           <p className="text-xs text-gray-500 mt-2 font-mono">
-            {isAdminMode ? 'ROOT ACCESS REQUIRED' : 'SECURE ENTERPRISE GATEWAY v3.0'}
+            {isAdminMode ? getLabel(language, 'rootAccess') : getLabel(language, 'secureGateway')}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className={`block text-[10px] font-bold uppercase mb-1 tracking-wider ${isAdminMode ? 'text-green-700' : 'text-gray-500'}`}>
-              {isAdminMode ? 'Identity Hash (Email)' : 'Authorized Email'}
+              {isAdminMode ? getLabel(language, 'identityHash') : getLabel(language, 'authEmail')}
             </label>
             <div className="relative">
               <input 
@@ -129,7 +129,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin, language }) => {
 
           <div>
             <label className={`block text-[10px] font-bold uppercase mb-1 tracking-wider ${isAdminMode ? 'text-green-700' : 'text-gray-500'}`}>
-              {isAdminMode ? 'Access Key' : (isLogin ? 'Full Name / ID' : 'Full Name')}
+              {isAdminMode ? getLabel(language, 'accessKey') : (isLogin ? `${getLabel(language, 'fullName')} / ID` : getLabel(language, 'fullName'))}
             </label>
             <div className="relative">
               <input 
@@ -155,7 +155,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin, language }) => {
             }`}
           >
             <span className="relative z-10 flex items-center justify-center gap-2">
-              {isAdminMode ? 'AUTHENTICATE ROOT' : (isLogin ? getLabel(language, 'loginBtn') : getLabel(language, 'signupBtn'))}
+              {isAdminMode ? getLabel(language, 'authRoot') : (isLogin ? getLabel(language, 'loginBtn') : getLabel(language, 'signupBtn'))}
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
                 <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" />
               </svg>
@@ -169,7 +169,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin, language }) => {
               onClick={() => setIsLogin(!isLogin)}
               className="text-gray-400 hover:text-white transition-colors"
             >
-              {isLogin ? "Initialize New ID" : "Existing User Login"}
+              {isLogin ? getLabel(language, 'initNewId') : getLabel(language, 'existUser')}
             </button>
           )}
           
@@ -177,14 +177,14 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin, language }) => {
             onClick={() => setIsAdminMode(!isAdminMode)}
             className={`ml-auto font-mono uppercase tracking-wider ${isAdminMode ? 'text-red-500 hover:text-red-400' : 'text-gray-600 hover:text-bizflow-400'}`}
           >
-            {isAdminMode ? 'Exit God Mode' : 'Admin Access'}
+            {isAdminMode ? getLabel(language, 'exitGod') : getLabel(language, 'adminAccess')}
           </button>
         </div>
       </div>
       
       <div className="mt-8 flex gap-6 text-[10px] text-gray-600 font-mono tracking-widest uppercase">
-        <span className="flex items-center gap-2"><span className={`w-1.5 h-1.5 ${isAdminMode ? 'bg-green-500' : 'bg-bizflow-500'} rounded-full animate-pulse`}></span> Network Secure</span>
-        <span className="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3"><path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" /></svg> End-to-End Encrypted</span>
+        <span className="flex items-center gap-2"><span className={`w-1.5 h-1.5 ${isAdminMode ? 'bg-green-500' : 'bg-bizflow-500'} rounded-full animate-pulse`}></span> {getLabel(language, 'netSecure')}</span>
+        <span className="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3"><path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" /></svg> {getLabel(language, 'e2eEncrypt')}</span>
       </div>
     </div>
   );

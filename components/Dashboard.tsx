@@ -10,8 +10,11 @@ import SectionGTM from './SectionGTM';
 import SectionCompliance from './SectionCompliance';
 import LegalModal from './LegalModal';
 import LivePreview from './LivePreview'; 
+import DeploymentModal from './DeploymentModal';
+import FeedbackModal from './FeedbackModal';
 import { getLabel } from '../utils/i18n';
 import { AuthService } from '../services/authService';
+import { LoggerService } from '../services/loggerService';
 
 interface DashboardProps {
   plan: StartupPlan;
@@ -23,66 +26,80 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ plan, onReset, onSave, language }) => {
   const [activeTab, setActiveTab] = useState<SectionType>(SectionType.BLUEPRINT);
   const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
+  const [isDeploymentModalOpen, setIsDeploymentModalOpen] = useState(false);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [deploymentStatus, setDeploymentStatus] = useState<'idle' | 'deploying' | 'deployed'>('idle');
-  const [liveUrl, setLiveUrl] = useState<string | null>(null);
 
   const handleDeployClick = () => {
     setIsLegalModalOpen(true);
   };
 
-  const handleLegalAccept = () => {
+  const handleLegalAccept = (kycData: { name: string; govId: string; phone: string; address: string }) => {
     setIsLegalModalOpen(false);
     setDeploymentStatus('deploying');
     
-    // 1. Record in Ledger
-    const user = AuthService.getCurrentUser();
-    if (user) {
-        AuthService.recordDeployment(user.email, plan);
+    const currentUser = AuthService.getCurrentUser();
+    if (currentUser) {
+       AuthService.updateUserKYC(currentUser.email, kycData.govId, kycData.phone, kycData.address);
     }
 
-    // 2. Generate "Live Hosting" Link using the AI-generated HTML
-    // Fallback if AI didn't generate HTML for some reason
-    const prototypeHTML = plan.livePrototypeHTML || `
-         <!DOCTYPE html>
-         <html>
-         <head>
-            <title>${plan.branding.name} - MVP</title>
-            <script src="https://cdn.tailwindcss.com"></script>
-            <style>body { background-color: #0f172a; color: white; font-family: sans-serif; }</style>
-         </head>
-         <body>
-            <div id="app" class="p-10 flex flex-col items-center justify-center min-h-screen text-center">
-               <h1 class="text-5xl font-bold text-teal-400 mb-4">${plan.branding.name}</h1>
-               <p class="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">${plan.branding.tagline}</p>
-               <div class="bg-slate-800 p-8 rounded-xl border border-slate-700 max-w-3xl w-full mx-auto shadow-2xl">
-                  <h2 class="text-2xl font-bold mb-4 text-white">Core Solution</h2>
-                  <p class="mb-8 text-gray-300 leading-relaxed">${plan.blueprint.solution}</p>
-                  <button class="bg-teal-500 hover:bg-teal-400 text-black font-bold py-3 px-8 rounded-full transition-transform hover:scale-105">
-                    Request Early Access
-                  </button>
-               </div>
-               <div class="mt-12 text-xs text-gray-500 font-mono">
-                  SECURE DEPLOYMENT ID: ${crypto.randomUUID()}
-               </div>
-            </div>
-         </body>
-         </html>
+    if (currentUser) {
+        AuthService.recordDeployment(currentUser.email, plan, {
+            name: kycData.name,
+            govId: kycData.govId,
+            phone: kycData.phone
+        });
+    }
+
+    const subject = `OFFICIAL CONTRACT: ${plan.branding.name} (ID: ${kycData.govId})`;
+    const body = `
+LEGAL DEPLOYMENT NOTICE & EQUITY GRANT
+
+PARTIES:
+1. ${kycData.name} (The Founder)
+   ID: ${kycData.govId}
+   Phone: ${kycData.phone}
+   Address: ${kycData.address}
+
+2. Soumoditya Das (The Architect)
+   Stake: 13.00% Gross Royalty + 13.00% Equity
+
+PROJECT:
+Name: ${plan.branding.name}
+Valuation: Pending
+
+AGREEMENT:
+By deploying this software, The Founder irrevocably agrees to the above terms under International Jurisdiction.
+
+Digital Signature: ${kycData.name}
+Timestamp: ${new Date().toISOString()}
     `;
-
-    const blob = new Blob([prototypeHTML], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-
+    
     setTimeout(() => {
-      setDeploymentStatus('deployed');
-      setActiveTab(SectionType.CODE);
-      setLiveUrl(url);
-      
-      // 3. Trigger Email Client
-      const subject = `BIZFLOW DEPLOYMENT: ${plan.branding.name}`;
-      const body = `Deployment Report for ${plan.branding.name}.\n\nStakeholder: Soumoditya Das (13%)\nUser: ${user?.email}\n\n[Contract Attached in System]`;
-      window.open(`mailto:soumoditt@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+        window.open(`mailto:soumoditt@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+        
+        setDeploymentStatus('deployed');
+        setIsDeploymentModalOpen(true);
+    }, 2000);
+  };
 
-    }, 3000);
+  const handleDeploymentClose = () => {
+    setIsDeploymentModalOpen(false);
+    setTimeout(() => {
+        setIsFeedbackModalOpen(true);
+    }, 1000);
+  };
+
+  const handleFeedbackSubmit = (rating: number, comment: string) => {
+    const user = AuthService.getCurrentUser();
+    LoggerService.submitFeedback({
+        id: crypto.randomUUID(),
+        userEmail: user?.email || 'ANONYMOUS',
+        projectName: plan.branding.name,
+        rating,
+        comment,
+        submittedAt: new Date().toISOString()
+    });
   };
 
   const getTabLabel = (type: SectionType) => {
@@ -116,21 +133,21 @@ const Dashboard: React.FC<DashboardProps> = ({ plan, onReset, onSave, language }
   return (
     <div className="animate-fade-in pb-20">
       {/* Header Area */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-6 border-b border-gray-800 pb-6">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-6">
         <div>
-          <h1 className="text-4xl font-black text-white tracking-tight mb-2 drop-shadow-[0_0_15px_rgba(20,184,166,0.3)]">{plan.branding.name}</h1>
-          <p className="text-xl text-bizflow-400 font-medium">{plan.branding.tagline}</p>
+          <h1 className="text-3xl font-black text-white tracking-tight mb-1">{plan.branding.name}</h1>
+          <p className="text-sm text-gray-400 font-mono">{plan.branding.tagline}</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
            <button 
             onClick={onSave}
-            className="px-5 py-2.5 bg-dark-card hover:bg-gray-800 border border-gray-700 rounded-lg text-sm font-medium text-bizflow-300 transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md text-xs font-medium text-gray-300 transition-colors flex items-center gap-2"
           >
             {getLabel(language, 'saveBtn')}
           </button>
            <button 
             onClick={onReset}
-            className="px-5 py-2.5 bg-dark-card hover:bg-gray-800 border border-gray-700 rounded-lg text-sm font-medium text-gray-300 transition-colors"
+            className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md text-xs font-medium text-gray-300 transition-colors"
           >
             {getLabel(language, 'newIdea')}
           </button>
@@ -138,15 +155,15 @@ const Dashboard: React.FC<DashboardProps> = ({ plan, onReset, onSave, language }
           {deploymentStatus === 'idle' && (
             <button 
               onClick={handleDeployClick}
-              className="px-6 py-2.5 bg-gradient-to-r from-bizflow-600 to-purple-600 hover:from-bizflow-500 hover:to-purple-500 text-white font-bold rounded-lg shadow-[0_0_20px_rgba(94,234,212,0.3)] transform hover:-translate-y-0.5 transition-all flex items-center gap-2"
+              className="px-6 py-2 bg-bizflow-600 hover:bg-bizflow-500 text-white font-bold rounded-md shadow-lg transform hover:-translate-y-0.5 transition-all flex items-center gap-2 text-xs uppercase tracking-wide"
             >
               {getLabel(language, 'deployBtn')}
             </button>
           )}
 
           {deploymentStatus === 'deploying' && (
-             <button disabled className="px-6 py-2.5 bg-gray-700 text-gray-400 font-bold rounded-lg cursor-wait flex items-center gap-2">
-               <svg className="animate-spin h-5 w-5 text-bizflow-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+             <button disabled className="px-6 py-2 bg-gray-800 text-gray-400 font-bold rounded-md cursor-wait flex items-center gap-2 text-xs uppercase tracking-wide">
+               <svg className="animate-spin h-4 w-4 text-bizflow-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                </svg>
@@ -154,53 +171,53 @@ const Dashboard: React.FC<DashboardProps> = ({ plan, onReset, onSave, language }
              </button>
           )}
 
-          {deploymentStatus === 'deployed' && liveUrl && (
-             <a 
-               href={liveUrl} 
-               target="_blank" 
-               rel="noopener noreferrer"
-               className="px-6 py-2.5 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg flex items-center gap-2 animate-pulse shadow-[0_0_20px_rgba(34,197,94,0.4)]"
+          {deploymentStatus === 'deployed' && (
+             <button 
+               onClick={() => setIsDeploymentModalOpen(true)}
+               className="px-6 py-2 bg-green-600 hover:bg-green-500 text-white font-bold rounded-md flex items-center gap-2 animate-pulse text-xs uppercase tracking-wide"
              >
-               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
                </svg>
                {getLabel(language, 'launchBtn')}
-             </a>
+             </button>
           )}
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="border-b border-gray-700 mb-8 overflow-x-auto scrollbar-hide">
-        <nav className="flex space-x-2 md:space-x-8 min-w-max pb-1">
+      {/* Toolbar / Tabs (Figma Style) */}
+      <div className="flex justify-center mb-8 sticky top-20 z-40">
+        <div className="flex bg-[#1e1e1e] border border-white/10 rounded-full p-1 shadow-2xl backdrop-blur-md overflow-x-auto max-w-full">
           {Object.values(SectionType).map((type) => (
             <button
               key={type}
               onClick={() => setActiveTab(type)}
               className={`
-                py-4 px-2 border-b-2 font-medium text-sm transition-all whitespace-nowrap
+                px-4 py-2 rounded-full font-medium text-xs transition-all whitespace-nowrap
                 ${activeTab === type 
-                  ? 'border-bizflow-500 text-bizflow-400 shadow-[0_1px_0_0_#14b8a6]' 
-                  : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-600'
+                  ? 'bg-bizflow-600 text-white shadow-md' 
+                  : 'text-gray-400 hover:text-white hover:bg-white/5'
                 }
               `}
             >
               {getTabLabel(type)}
             </button>
           ))}
-        </nav>
+        </div>
       </div>
 
       {/* Main Content Split View */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
          {/* Left: Detail View */}
-         <div className="xl:col-span-7 min-h-[500px]">
+         <div className="xl:col-span-8 min-h-[500px]">
            {renderContent()}
          </div>
 
          {/* Right: Live Preview */}
-         <div className="xl:col-span-5 relative">
-            <LivePreview plan={plan} activeTab={activeTab} />
+         <div className="xl:col-span-4 relative hidden xl:block">
+            <div className="sticky top-32">
+              <LivePreview plan={plan} activeTab={activeTab} />
+            </div>
          </div>
       </div>
 
@@ -208,6 +225,22 @@ const Dashboard: React.FC<DashboardProps> = ({ plan, onReset, onSave, language }
         isOpen={isLegalModalOpen} 
         onClose={() => setIsLegalModalOpen(false)}
         onAccept={handleLegalAccept}
+        user={AuthService.getCurrentUser()}
+      />
+
+      <DeploymentModal 
+        isOpen={isDeploymentModalOpen}
+        onClose={handleDeploymentClose}
+        plan={plan}
+        language={language}
+      />
+
+      <FeedbackModal 
+        isOpen={isFeedbackModalOpen}
+        onClose={() => setIsFeedbackModalOpen(false)}
+        onSubmit={handleFeedbackSubmit}
+        projectName={plan.branding.name}
+        language={language}
       />
     </div>
   );

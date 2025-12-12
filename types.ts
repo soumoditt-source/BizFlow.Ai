@@ -33,6 +33,10 @@ export interface UserProfile {
   name: string;
   isAdmin: boolean;
   createdAt: string;
+  // Extended KYC Info
+  govId?: string;
+  phone?: string;
+  address?: string;
 }
 
 export interface DeploymentRecord {
@@ -43,6 +47,10 @@ export interface DeploymentRecord {
   royaltyStake: string;
   deployedAt: string;
   contractHash: string;
+  // Snapshot of user details at time of signing
+  signerName: string;
+  signerGovId: string;
+  signerPhone: string;
 }
 
 export interface SavedProject {
@@ -52,6 +60,25 @@ export interface SavedProject {
   language: Language;
   createdAt: string;
   plan: StartupPlan;
+}
+
+export interface AuditLog {
+  id: string;
+  timestamp: string;
+  userEmail: string;
+  action: string;
+  details: string;
+  sessionId: string;
+  riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+}
+
+export interface UserFeedback {
+  id: string;
+  userEmail: string;
+  rating: number;
+  comment: string;
+  submittedAt: string;
+  projectName: string;
 }
 
 export interface CompliancePolicy {
@@ -168,5 +195,5 @@ export interface StartupPlan {
   pitchDeck: PitchDeckSlide[];
   gtm: GTMStrategy;
   compliance: CompliancePolicy;
-  livePrototypeHTML?: string; // Full HTML/JS App
+  livePrototypeHTML?: string; 
 }

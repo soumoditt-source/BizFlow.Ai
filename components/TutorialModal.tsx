@@ -27,7 +27,7 @@ const TutorialModal: React.FC<Props> = ({ onClose }) => {
            <div className="space-y-2">
              <h3 className="text-white font-bold text-lg">Welcome, Founder.</h3>
              <p className="text-gray-400 text-sm leading-relaxed">
-                You have accessed the BizFlow AutoCEO Suite. This tool leverages Gemini 3 Pro to autonomously architect entire corporations from a single text input.
+                You have accessed the BizFlow AutoCEO Suite. This tool leverages advanced LLMs to autonomously architect entire corporations from a single text input.
              </p>
            </div>
 

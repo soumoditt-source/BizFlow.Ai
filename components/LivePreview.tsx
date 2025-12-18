@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { StartupPlan, SectionType } from '../types';
 
@@ -62,10 +61,10 @@ const LivePreview: React.FC<Props> = ({ plan, activeTab }) => {
         return (
           <div className="h-full bg-[#0a0a0a] p-6 font-mono text-[10px] space-y-2 overflow-hidden">
              <div className="text-gray-600 mb-4 tracking-tighter uppercase">Deployment Log // v4.0.0</div>
-             <div className="text-green-500">&gt; Initiating cloud build...</div>
-             <div className="text-green-500">&gt; Compiling React components...</div>
-             <div className="text-green-500">&gt; Optimizing Tailwind layer...</div>
-             <div className="text-white font-bold">&gt; Success. Site live at sandbox.bizflow.ai</div>
+             <div className="text-green-500">{" > "} Initiating cloud build...</div>
+             <div className="text-green-500">{" > "} Compiling React components...</div>
+             <div className="text-green-500">{" > "} Optimizing Tailwind layer...</div>
+             <div className="text-white font-bold">{" > "} Success. Site live at sandbox.bizflow.ai</div>
              <div className="pt-10 flex flex-col items-center opacity-40">
                 <div className="w-32 h-32 border border-white/10 rounded-xl flex items-center justify-center">
                    <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>

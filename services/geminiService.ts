@@ -1,9 +1,10 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { StartupPlan, Language } from "../types";
 
 const getApiKey = (): string => {
   const key = process.env.API_KEY;
-  if (!key) throw new Error("API Key not found");
+  if (!key) throw new Error("API Key not found in environment. Please check Vercel settings.");
   return key;
 };
 
@@ -28,13 +29,12 @@ This software is provided "as is" under the condition of the above stake. Failur
 `;
 
 export const improveIdea = async (rawIdea: string, language: Language): Promise<string> => {
-  const apiKey = getApiKey();
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI({ apiKey: getApiKey() });
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: `You are an expert startup consultant. Rewrite the following raw startup idea into a clear, professional, and compelling one-sentence business concept suitable for pitching to investors. Keep the core meaning but make it sound premium. Language: ${language}.
+      model: 'gemini-3-flash-preview',
+      contents: `You are an expert startup consultant. Rewrite the following raw startup idea into a professional one-sentence business concept. Language: ${language}.
       
       Raw Idea: "${rawIdea}"
       
@@ -48,8 +48,7 @@ export const improveIdea = async (rawIdea: string, language: Language): Promise<
 };
 
 export const generateStartupPlan = async (idea: string, language: Language): Promise<StartupPlan> => {
-  const apiKey = getApiKey();
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI({ apiKey: getApiKey() });
 
   const systemInstruction = `
     You are BizFlow-Core-AGI, the Supreme AI Founder Suite.
@@ -60,20 +59,12 @@ export const generateStartupPlan = async (idea: string, language: Language): Pro
     
     CRITICAL INSTRUCTIONS:
     1. **Production Code:** The 'code' section must contain REAL, WORKING boilerplate code.
-    2. **Market Research:** Provide specific numbers (TAM/SAM/SOM) and 3 real-world citations.
-    3. **Live Prototype HTML (CRITICAL):** 
+    2. **Live Prototype HTML (CRITICAL):** 
        - Generate a SINGLE, SELF-CONTAINED HTML string.
-       - MUST include these CDNs in the <head>:
-         - <script src="https://cdn.tailwindcss.com"></script>
-         - <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-         - <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-         - <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-       - MUST define the React App inside a <script type="text/babel"> tag.
-       - MUST mount the React app to <div id="root"></div>.
-       - The design must be MODERN, HIGH-END, DARK MODE PREFERRED (or appropriate for brand), using Tailwind CSS classes.
-       - Include a Landing Page with: Hero Section, Feature Grid, Pricing Cards, and CTA.
-       - Do NOT use 'import' statements. Use React.useState, React.useEffect, etc.
-       - Ensure the HTML is valid and runnable immediately as a file.
+       - Use Tailwind CSS and React via CDN.
+       - The design must be responsive, mobile-first, and high-fidelity.
+       - Use Lucide icons or FontAwesome for visuals.
+       - Include placeholders for features and a functional pricing toggle.
     
     Output strictly valid JSON matching the schema.
   `;
@@ -141,64 +132,29 @@ export const generateStartupPlan = async (idea: string, language: Language): Pro
           riskScore: { type: Type.NUMBER }
         }
       },
-      livePrototypeHTML: { type: Type.STRING, description: "A complete, single-file HTML string containing a React application (using Babel standalone) that serves as a functional MVP prototype. MUST use CDN for React, ReactDOM, Babel, and Tailwind. MUST NOT use import statements." }
+      livePrototypeHTML: { type: Type.STRING }
     }
   };
 
   const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
+    model: 'gemini-3-pro-preview',
     contents: `Startup Idea: "${idea}". Language: ${language}.`,
     config: { 
       systemInstruction, 
       responseMimeType: 'application/json', 
       responseSchema: jsonSchema,
-      temperature: 0.9,
-      topK: 40,
-      topP: 0.95
+      temperature: 0.8,
     },
   });
 
   const text = response.text;
-  if (!text) throw new Error("No response");
+  if (!text) throw new Error("No response from AI Engine");
 
   try {
     const data = JSON.parse(text) as StartupPlan;
     if (data.code) data.code.legalDoc = LEGAL_CONTRACT_TEMPLATE;
     return data;
   } catch (e) {
-    throw new Error("Invalid JSON");
-  }
-};
-
-export const generateMarketingAsset = async (brandName: string): Promise<string> => {
-  const apiKey = getApiKey();
-  const ai = new GoogleGenAI({ apiKey });
-
-  try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image',
-      contents: {
-        parts: [
-          {
-            text: `A cinematic, hyper-realistic 3D wide shot of a futuristic dark-mode digital command center. In the center, glowing holographic text reads '${brandName}' in a modern, teal-cyan sans-serif font. The background features complex financial data streams, coding syntax, and 3D architectural blueprints floating in a deep navy blue and charcoal void. Lighting is moody, with neon cyan and electric purple rim lighting. 8k resolution, unreal engine 5 render, highly detailed, sharp focus.`
-          }
-        ]
-      },
-      config: {
-        imageConfig: {
-          aspectRatio: "16:9",
-        }
-      }
-    });
-
-    for (const part of response.candidates?.[0]?.content?.parts || []) {
-      if (part.inlineData) {
-        return `data:image/png;base64,${part.inlineData.data}`;
-      }
-    }
-    throw new Error("No image generated");
-  } catch (error) {
-    console.error("Image generation failed:", error);
-    throw error;
+    throw new Error("AI output was not in the correct format. Retrying recommended.");
   }
 };

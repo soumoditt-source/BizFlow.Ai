@@ -72,3 +72,29 @@ const LivePreview: React.FC<Props> = ({ plan, activeTab }) => {
         );
       default:
         return (
+           <div className="h-full flex flex-col items-center justify-center p-8 text-center bg-white">
+              <div className="w-16 h-16 bg-bizflow-100 rounded-2xl flex items-center justify-center text-bizflow-600 mb-4">
+                 <span className="font-bold text-2xl">{plan.branding.name.charAt(0)}</span>
+              </div>
+              <h3 className="text-black font-bold text-lg">{plan.branding.name}</h3>
+              <p className="text-gray-400 text-xs mt-1 italic">"{plan.branding.tagline}"</p>
+           </div>
+        );
+    }
+  };
+
+  return (
+    <div className="w-full flex justify-center">
+      <div className="relative w-[280px] h-[580px] bg-black border-[8px] border-[#1a1a1a] rounded-[3rem] shadow-2xl overflow-hidden ring-1 ring-white/10">
+        {/* Notch */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-black rounded-b-2xl z-50"></div>
+        {/* Screen */}
+        <div className="w-full h-full bg-[#050505]">
+           {renderContent()}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default LivePreview;

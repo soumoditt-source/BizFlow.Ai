@@ -1,10 +1,19 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { StartupPlan, Language } from "../types";
 
+/**
+ * Robust API Key Resolver
+ * Ensures keys are found in both local dev (import.meta.env) 
+ * and production (process.env / Vercel secrets).
+ */
 const getApiKey = (): string => {
-  const key = process.env.API_KEY;
-  if (!key) throw new Error("API Key not found in environment. Please check Vercel settings.");
+  // Try Vite/Vercel standard locations
+  const key = (process.env.API_KEY || (import.meta as any).env?.VITE_API_KEY || (import.meta as any).env?.API_KEY);
+  
+  if (!key) {
+    console.error("CRITICAL: API Key not found. Ensure environment variables are set in Vercel.");
+    throw new Error("API Key initialization failed. Check System Console.");
+  }
   return key;
 };
 
@@ -64,7 +73,7 @@ export const generateStartupPlan = async (idea: string, language: Language): Pro
        - Use Tailwind CSS and React via CDN.
        - The design must be responsive, mobile-first, and high-fidelity.
        - Use Lucide icons or FontAwesome for visuals.
-       - Include placeholders for features and a functional pricing toggle.
+       - Include functional-looking UI components for the specific industry.
     
     Output strictly valid JSON matching the schema.
   `;
@@ -148,13 +157,51 @@ export const generateStartupPlan = async (idea: string, language: Language): Pro
   });
 
   const text = response.text;
-  if (!text) throw new Error("No response from AI Engine");
+  if (!text) throw new Error("Neural synthesis returned empty buffer.");
 
   try {
     const data = JSON.parse(text) as StartupPlan;
     if (data.code) data.code.legalDoc = LEGAL_CONTRACT_TEMPLATE;
     return data;
   } catch (e) {
-    throw new Error("AI output was not in the correct format. Retrying recommended.");
+    throw new Error("Neural output failed parity check. Retrying...");
+  }
+};
+
+/**
+ * Generates marketing visuals using specialized imagery models.
+ */
+export const generateMarketingAsset = async (brandName: string): Promise<string> => {
+  const ai = new GoogleGenAI({ apiKey: getApiKey() });
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash-image',
+      contents: {
+        parts: [
+          {
+            text: `High-fidelity 3D abstract visual representing innovation and scalability for a tech brand called "${brandName}". 
+            Futuristic aesthetic, clean whitespace, 8K, depth of field.`,
+          },
+        ],
+      },
+      config: {
+        imageConfig: {
+          aspectRatio: "16:9",
+        },
+      },
+    });
+
+    if (response.candidates?.[0]?.content?.parts) {
+      for (const part of response.candidates[0].content.parts) {
+        if (part.inlineData) {
+          return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+        }
+      }
+    }
+    throw new Error("Imagery node returned null.");
+  } catch (error) {
+    console.error("Imagery synthesis failed:", error);
+    throw error;
   }
 };

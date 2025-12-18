@@ -19,7 +19,8 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       outDir: 'dist',
-      sourcemap: false
+      sourcemap: false,
+      minify: 'esbuild'
     }
   };
 });

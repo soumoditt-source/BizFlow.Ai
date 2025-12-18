@@ -5,8 +5,7 @@ import { AuthService } from '../services/authService';
 
 /**
  * AuthScreen: The gateway to the BizFlow AutoCEO system.
- * This component handles user authentication and provides an executive overview 
- * of the system's neural architecture for first-time users.
+ * Features a high-fidelity introduction to the BizFlow ecosystem and multi-agent neural architecture.
  */
 interface AuthScreenProps {
   onLogin: (email: string, name: string) => void;
@@ -96,9 +95,12 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin, language }) => {
                <p className="text-gray-400 text-lg leading-relaxed">
                   BizFlow AutoCEO is a multi-agent neural architecture that autonomously converts raw ideas into production-ready business empires.
                </p>
-               <p className="text-gray-500 text-sm leading-relaxed border-l-2 border-bizflow-500/30 pl-4 italic">
-                  "Traditional startup cycles take years. BizFlow executes the entire strategic, financial, and technical roadmap in under 60 seconds."
-               </p>
+               <div className="p-4 bg-bizflow-500/5 border border-bizflow-500/10 rounded-xl">
+                  <p className="text-bizflow-500 font-bold text-xs uppercase mb-1 tracking-widest">Architect's Note</p>
+                  <p className="text-gray-500 text-sm italic leading-relaxed">
+                    "Traditional startup cycles take years. BizFlow executes the entire strategic, financial, and technical roadmap in under 60 seconds."
+                  </p>
+               </div>
             </div>
          </div>
 

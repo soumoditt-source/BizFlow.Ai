@@ -11,10 +11,15 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     define: {
       // Explicitly stringify the API key to ensure it is embedded in the build
-      'process.env.API_KEY': JSON.stringify(env.API_KEY)
+      // This handles the process.env usage in the code
+      'process.env.API_KEY': JSON.stringify(env.API_KEY || env.VITE_API_KEY)
     },
     server: {
       port: 3000
+    },
+    build: {
+      outDir: 'dist',
+      sourcemap: false
     }
   };
 });

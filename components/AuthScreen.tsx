@@ -3,6 +3,11 @@ import { getLabel } from '../utils/i18n';
 import { Language } from '../types';
 import { AuthService } from '../services/authService';
 
+/**
+ * AuthScreen: The gateway to the BizFlow AutoCEO system.
+ * This component handles user authentication and provides an executive overview 
+ * of the system's neural architecture for first-time users.
+ */
 interface AuthScreenProps {
   onLogin: (email: string, name: string) => void;
   language: Language;
@@ -87,9 +92,14 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin, language }) => {
               The Engine of <br/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-bizflow-400 to-purple-500">Infinite Startups.</span>
             </h1>
-            <p className="text-gray-400 text-lg leading-relaxed max-w-md">
-              BizFlow AutoCEO is a multi-agent neural architecture that autonomously converts raw ideas into production-ready business empires.
-            </p>
+            <div className="space-y-4 max-w-md">
+               <p className="text-gray-400 text-lg leading-relaxed">
+                  BizFlow AutoCEO is a multi-agent neural architecture that autonomously converts raw ideas into production-ready business empires.
+               </p>
+               <p className="text-gray-500 text-sm leading-relaxed border-l-2 border-bizflow-500/30 pl-4 italic">
+                  "Traditional startup cycles take years. BizFlow executes the entire strategic, financial, and technical roadmap in under 60 seconds."
+               </p>
+            </div>
          </div>
 
          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -97,25 +107,25 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin, language }) => {
                <h3 className="text-white font-bold text-sm uppercase flex items-center gap-2">
                  <div className="w-1 h-4 bg-bizflow-500"></div> 01. Strategic Core
                </h3>
-               <p className="text-xs text-gray-500 leading-normal">Generates full blueprints, GTM strategies, and competitive positioning instantly.</p>
+               <p className="text-xs text-gray-500 leading-normal">Generates full blueprints, GTM strategies, and competitive positioning with real-time market data.</p>
             </div>
             <div className="space-y-2">
                <h3 className="text-white font-bold text-sm uppercase flex items-center gap-2">
                  <div className="w-1 h-4 bg-purple-500"></div> 02. Fiscal Neural
                </h3>
-               <p className="text-xs text-gray-500 leading-normal">Calculates 5-year projections, unit economics, and revenue models with precision.</p>
+               <p className="text-xs text-gray-500 leading-normal">Calculates 5-year projections, unit economics, and complex revenue models with machine precision.</p>
             </div>
             <div className="space-y-2">
                <h3 className="text-white font-bold text-sm uppercase flex items-center gap-2">
                  <div className="w-1 h-4 bg-blue-500"></div> 03. Code Synthesis
                </h3>
-               <p className="text-xs text-gray-500 leading-normal">Produces React/Vite/Express code and a live-deployable mobile prototype.</p>
+               <p className="text-xs text-gray-500 leading-normal">Produces functional React/Express codebases and instantly deploys an interactive mobile prototype.</p>
             </div>
             <div className="space-y-2">
                <h3 className="text-white font-bold text-sm uppercase flex items-center gap-2">
                  <div className="w-1 h-4 bg-emerald-500"></div> 04. Legal Ledger
                </h3>
-               <p className="text-xs text-gray-500 leading-normal">Digitally signs and secures your enterprise architecture via a bound contract.</p>
+               <p className="text-xs text-gray-500 leading-normal">Digitally signs and secures your enterprise architecture via a legally-bound smart contract framework.</p>
             </div>
          </div>
       </div>

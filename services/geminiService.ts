@@ -7,11 +7,13 @@ import { StartupPlan, Language } from "../types";
  * and production (process.env / Vercel secrets).
  */
 const getApiKey = (): string => {
-  // Try Vite/Vercel standard locations
-  const key = (process.env.API_KEY || (import.meta as any).env?.VITE_API_KEY || (import.meta as any).env?.API_KEY);
+  // Try common Vercel/Vite environment variable patterns
+  const key = process.env.API_KEY || 
+              (import.meta as any).env?.VITE_API_KEY || 
+              (import.meta as any).env?.API_KEY;
   
   if (!key) {
-    console.error("CRITICAL: API Key not found. Ensure environment variables are set in Vercel.");
+    console.error("CRITICAL: API Key not found. Ensure API_KEY is set in Vercel Environment Variables.");
     throw new Error("API Key initialization failed. Check System Console.");
   }
   return key;

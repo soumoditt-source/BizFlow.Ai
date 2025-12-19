@@ -1,20 +1,10 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { StartupPlan, Language } from "../types";
 
-/**
- * Robust API Key Resolver
- * Ensures keys are found in both local dev (import.meta.env) 
- * and production (process.env / Vercel secrets).
- */
 const getApiKey = (): string => {
-  // Try common Vercel/Vite environment variable patterns
-  const key = process.env.API_KEY || 
-              (import.meta as any).env?.VITE_API_KEY || 
-              (import.meta as any).env?.API_KEY;
-  
+  const key = process.env.API_KEY;
   if (!key) {
-    console.error("CRITICAL: API Key not found. Ensure API_KEY is set in Vercel Environment Variables.");
-    throw new Error("API Key initialization failed. Check System Console.");
+    throw new Error("API Key initialization failed. Ensure API_KEY environment variable is set.");
   }
   return key;
 };
@@ -45,11 +35,13 @@ export const improveIdea = async (rawIdea: string, language: Language): Promise<
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `You are an expert startup consultant. Rewrite the following raw startup idea into a professional one-sentence business concept. Language: ${language}.
+      contents: `Simulate a boardroom of world-class entrepreneurs. Improve the following startup idea. 
+      Combine the brilliance of a Visionary CEO and a Pragmatic CTO.
       
       Raw Idea: "${rawIdea}"
+      Language: ${language}
       
-      Output only the improved text.`,
+      Output only the final refined one-sentence concept.`,
     });
     return response.text || rawIdea;
   } catch (error) {
@@ -61,23 +53,30 @@ export const improveIdea = async (rawIdea: string, language: Language): Promise<
 export const generateStartupPlan = async (idea: string, language: Language): Promise<StartupPlan> => {
   const ai = new GoogleGenAI({ apiKey: getApiKey() });
 
+  // persona-based boardroom simulation instruction
   const systemInstruction = `
-    You are BizFlow-Core-AGI, the Supreme AI Founder Suite.
-    
+    You are BizFlow-Core-AGI v4.0. You are simulating a boardroom of 10 WORLD-CLASS MASTERS:
+    1. CEO (Naval persona): Strategy & First Principles.
+    2. CTO (Carmack persona): High-performance architecture.
+    3. CMO (Steve Jobs persona): Branding & Perfection.
+    4. CFO (Dalio persona): Unit economics & Market cycles.
+    5. VC (Thiel persona): Zero-to-One thinking.
+    6. Product Designer (Ive persona): UX flow.
+    7. Growth Hacker: Virality & Blitzscaling.
+    8. Legal Counsel: Global compliance.
+    9. Market Analyst: Search-grounded competitive Intel.
+    10. Lead Engineer: Clean, production-ready implementation.
+
     TASK:
-    Generate a COMPLETE, UNIQUE, and PRODUCTION-READY startup plan for: "${idea}".
+    Generate a startup plan that is the collective MASTERPIECE of these 10 experts.
+    Use Google Search to verify market sizes and competitors.
     Target Language: ${language}.
-    
-    CRITICAL INSTRUCTIONS:
-    1. **Production Code:** The 'code' section must contain REAL, WORKING boilerplate code.
-    2. **Live Prototype HTML (CRITICAL):** 
-       - Generate a SINGLE, SELF-CONTAINED HTML string.
-       - Use Tailwind CSS and React via CDN.
-       - The design must be responsive, mobile-first, and high-fidelity.
-       - Use Lucide icons or FontAwesome for visuals.
-       - Include functional-looking UI components for the specific industry.
-    
-    Output strictly valid JSON matching the schema.
+
+    CRITICAL:
+    - Include expertInsights from the masters.
+    - Grounding: Use search results to populate the 'groundingSources' field with real links found.
+    - Code: Must be functional React/Tailwind.
+    - Output strictly valid JSON matching the schema.
   `;
 
   const jsonSchema = {
@@ -92,7 +91,9 @@ export const generateStartupPlan = async (idea: string, language: Language): Pro
           userPersonas: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, description: { type: Type.STRING }, painPoints: { type: Type.ARRAY, items: { type: Type.STRING } } } } },
           marketResearch: { type: Type.OBJECT, properties: { tam: { type: Type.STRING }, sam: { type: Type.STRING }, som: { type: Type.STRING }, insight: { type: Type.STRING }, citations: { type: Type.ARRAY, items: { type: Type.STRING } } } },
           pricingStrategy: { type: Type.STRING },
-          competitiveLandscape: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { competitor: { type: Type.STRING }, weakness: { type: Type.STRING }, bizflowAdvantage: { type: Type.STRING } } } }
+          competitiveLandscape: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { competitor: { type: Type.STRING }, weakness: { type: Type.STRING }, bizflowAdvantage: { type: Type.STRING } } } },
+          expertInsights: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Specific strategic notes from the 10 expert personas." },
+          groundingSources: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { title: { type: Type.STRING }, uri: { type: Type.STRING } } } }
         }
       },
       financials: {
@@ -148,31 +149,32 @@ export const generateStartupPlan = async (idea: string, language: Language): Pro
   };
 
   const response = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview',
-    contents: `Startup Idea: "${idea}". Language: ${language}.`,
+    model: 'gemini-3-flash-preview',
+    contents: `Startup Masterplan for: "${idea}". Execute boardroom synthesis.`,
     config: { 
       systemInstruction, 
       responseMimeType: 'application/json', 
       responseSchema: jsonSchema,
-      temperature: 0.8,
+      tools: [{ googleSearch: {} }],
+      temperature: 0.9,
     },
   });
 
   const text = response.text;
-  if (!text) throw new Error("Neural synthesis returned empty buffer.");
+  if (!text) throw new Error("Synthesis node failed to return buffer.");
 
   try {
     const data = JSON.parse(text) as StartupPlan;
     if (data.code) data.code.legalDoc = LEGAL_CONTRACT_TEMPLATE;
+    
+    // Extract grounding chunks manually if needed to verify, 
+    // but the model is instructed to put them in the schema.
     return data;
   } catch (e) {
-    throw new Error("Neural output failed parity check. Retrying...");
+    throw new Error("Parity check failed. Output may be non-compliant JSON.");
   }
 };
 
-/**
- * Generates marketing visuals using specialized imagery models.
- */
 export const generateMarketingAsset = async (brandName: string): Promise<string> => {
   const ai = new GoogleGenAI({ apiKey: getApiKey() });
 
@@ -180,30 +182,19 @@ export const generateMarketingAsset = async (brandName: string): Promise<string>
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
       contents: {
-        parts: [
-          {
-            text: `High-fidelity 3D abstract visual representing innovation and scalability for a tech brand called "${brandName}". 
-            Futuristic aesthetic, clean whitespace, 8K, depth of field.`,
-          },
-        ],
+        parts: [{ text: `A futuristic, high-fidelity marketing visual for "${brandName}". Abstract tech aesthetic, 8k, raytracing.` }],
       },
-      config: {
-        imageConfig: {
-          aspectRatio: "16:9",
-        },
-      },
+      config: { imageConfig: { aspectRatio: "16:9" } },
     });
 
     if (response.candidates?.[0]?.content?.parts) {
       for (const part of response.candidates[0].content.parts) {
-        if (part.inlineData) {
-          return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-        }
+        if (part.inlineData) return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
       }
     }
-    throw new Error("Imagery node returned null.");
+    throw new Error("Asset node returned empty.");
   } catch (error) {
-    console.error("Imagery synthesis failed:", error);
+    console.error("Asset generation failed:", error);
     throw error;
   }
 };

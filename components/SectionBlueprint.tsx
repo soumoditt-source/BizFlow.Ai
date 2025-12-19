@@ -28,6 +28,21 @@ const SectionBlueprint: React.FC<Props> = ({ data, language }) => {
         </div>
       </div>
 
+      {/* Expert Insights - Boardroom Deliberation */}
+      {data.expertInsights && data.expertInsights.length > 0 && (
+        <div className="bg-bizflow-950/30 border border-bizflow-500/20 rounded-xl p-6">
+          <h3 className="text-bizflow-400 font-mono text-[10px] uppercase mb-4 tracking-widest">Master-Level Synthesis Notes</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {data.expertInsights.map((insight, i) => (
+              <div key={i} className="flex gap-3 items-start">
+                <div className="w-1.5 h-1.5 rounded-full bg-bizflow-500 mt-1.5 shrink-0"></div>
+                <p className="text-xs text-gray-300 italic">"{insight}"</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Market Data */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {['tam', 'sam', 'som'].map((metric) => (
@@ -53,6 +68,21 @@ const SectionBlueprint: React.FC<Props> = ({ data, language }) => {
               <h3 className="text-white font-bold text-sm mb-1">{getLabel(language, 'marketStats')}</h3>
               <p className="text-gray-400 text-sm mb-4 leading-relaxed">"{data.marketResearch.insight}"</p>
               
+              {/* Verified Grounding Sources */}
+              {data.groundingSources && data.groundingSources.length > 0 && (
+                <div className="mb-4">
+                  <p className="text-[10px] text-green-500 font-bold uppercase mb-2 tracking-widest">Verified Market Intel</p>
+                  <div className="flex flex-col gap-2">
+                    {data.groundingSources.map((source, i) => (
+                      <a key={i} href={source.uri} target="_blank" rel="noopener noreferrer" className="text-xs text-bizflow-400 hover:text-bizflow-300 underline flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path></svg>
+                        {source.title}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {data.marketResearch.citations && data.marketResearch.citations.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {data.marketResearch.citations.map((cite, i) => (

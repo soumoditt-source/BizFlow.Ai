@@ -10,13 +10,14 @@ const LoadingScreen: React.FC<Props> = ({ language = Language.ENGLISH }) => {
   const [currentStep, setCurrentStep] = useState(0);
 
   const steps = [
-    getLabel(language, 'loading_market'),
-    getLabel(language, 'loading_finance'),
-    getLabel(language, 'loading_brand'),
-    getLabel(language, 'loading_tech'),
-    getLabel(language, 'loading_code'),
-    getLabel(language, 'loading_gtm'),
-    getLabel(language, 'loading_pitch')
+    "Simulating Executive Boardroom...",
+    "CEO Navigating Strategic Direction...",
+    "CTO Auditing Tech Stack...",
+    "CFO Modeling Unit Economics...",
+    "CMO Refining Brand Resonance...",
+    "VC Scoring Investability...",
+    "Grounding Market Intelligence...",
+    "Synthesis Complete. Building Empire..."
   ];
 
   useEffect(() => {
@@ -34,13 +35,13 @@ const LoadingScreen: React.FC<Props> = ({ language = Language.ENGLISH }) => {
         <div className="absolute inset-4 bg-bizflow-500/10 rounded-full animate-pulse"></div>
       </div>
       
-      <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">BizFlow AutoCEO is working</h2>
-      <p className="text-bizflow-400 font-mono text-lg h-8">
+      <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Multi-Agent Deliberation In Progress</h2>
+      <p className="text-bizflow-400 font-mono text-lg h-8 text-center px-4">
         {steps[currentStep]}
       </p>
       
       <div className="mt-8 max-w-md text-center text-sm text-dark-muted">
-        Leveraging Neural Architect to reason through 1,000+ business variables specifically for your idea.
+        10 world-class entrepreneurs are working on a single project to build the ultimate version of your request.
       </div>
     </div>
   );

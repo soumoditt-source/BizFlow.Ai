@@ -33,7 +33,6 @@ export interface UserProfile {
   name: string;
   isAdmin: boolean;
   createdAt: string;
-  // Extended KYC Info
   govId?: string;
   phone?: string;
   address?: string;
@@ -47,7 +46,6 @@ export interface DeploymentRecord {
   royaltyStake: string;
   deployedAt: string;
   contractHash: string;
-  // Snapshot of user details at time of signing
   signerName: string;
   signerGovId: string;
   signerPhone: string;
@@ -106,7 +104,7 @@ export interface BusinessBlueprint {
     sam: string;
     som: string;
     insight: string; 
-    citations: string[]; // List of sources
+    citations: string[];
   };
   pricingStrategy: string;
   competitiveLandscape: {
@@ -114,6 +112,8 @@ export interface BusinessBlueprint {
     weakness: string;
     bizflowAdvantage: string;
   }[];
+  expertInsights?: string[]; // DELIBERATION NOTES FROM THE 10 MASTERS
+  groundingSources?: { title: string; uri: string }[]; // SEARCH LINKS
 }
 
 export interface Financials {
